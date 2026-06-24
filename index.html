@@ -426,7 +426,7 @@
                 }
                 try {
                     const token = session.getAccessToken().getJwtToken();
-                    const apiEndpoint = 'https://YOUR_API_ID.execute-api.REGION.amazonaws.com/prod/sync';
+                   const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
 
                     const pushResponse = await fetch(apiEndpoint, {
                         method: 'POST',
