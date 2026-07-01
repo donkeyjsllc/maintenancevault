@@ -26,10 +26,9 @@
 
 <body class="bg-gray-900 text-gray-200 font-sans min-h-screen flex flex-col">
 
-   <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50 shadow-md">
+ <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50 shadow-md">
         <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
             
-            <!-- Top Row (Mobile) / Left Side (Desktop) -->
             <div class="flex items-center justify-between w-full sm:w-auto gap-3">
                 <h1 class="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center truncate">
                     <img src="icon-192.png" alt="MaintenanceVault Logo" class="w-8 h-8 rounded shadow-md mr-2">
@@ -45,7 +44,6 @@
                 </div>
             </div>
             
-            <!-- Bottom Row (Mobile) / Right Side (Desktop) -->
             <div class="flex flex-col items-center sm:items-end w-full sm:w-auto">
                 <div id="user-display" class="hidden text-[10px] text-blue-400 font-bold mb-2 flex items-center justify-center sm:justify-end gap-3 w-full">
                     <i id="sync-indicator" class="fas fa-cloud text-gray-600 hidden" title="Cloud Sync Active"></i>
@@ -67,7 +65,6 @@
             </div>
         </div>
         
-        <!-- Navigation Tabs -->
         <div id="nav-tabs" class="hidden flex max-w-4xl mx-auto px-4 mt-1 gap-4 text-sm font-semibold text-gray-500 overflow-x-auto whitespace-nowrap">
             <button onclick="switchTab('vehicle')" id="tab-vehicle" class="pb-2 tab-active transition-colors">
                 <i class="fas fa-truck-pickup mr-1"></i> VEHICLE
@@ -85,70 +82,63 @@
     </header>
 
     <main class="max-w-4xl mx-auto p-4 flex-grow w-full">
-
         <div id="dashboard" class="hidden">
             <form id="input-form" class="bg-gray-800 rounded-xl p-5 mb-6 border border-gray-700 shadow-xl animate-fade-in">
-            <h2 class="text-white font-bold mb-4 flex items-center">
-                <i class="fas fa-plus-circle text-blue-500 mr-2"></i> New Maintenance Log
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs text-gray-500 uppercase mb-1">Date</label>
-                    <input type="date" id="itemDate" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
-                </div>
-
-                <div>
-                    <label class="block text-xs text-gray-500 uppercase mb-1">Equipment/Vehicle Name</label>
-                    <input type="text" id="itemAssetName" placeholder="e.g. Work Truck, HVAC, Property" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
-                </div>
-
-                <div>
-                    <label class="block text-xs text-gray-500 uppercase mb-1">Service Performed</label>
-                    <input type="text" id="itemName" placeholder="e.g. Oil Change 0W-20" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
-                </div>
-
-                <div>
-                    <label class="block text-xs text-gray-500 uppercase mb-1">Cost ($)</label>
-                    <input type="number" id="itemCost" step="0.01" placeholder="0.00" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
-                </div>
+                <h2 class="text-white font-bold mb-4 flex items-center">
+                    <i class="fas fa-plus-circle text-blue-500 mr-2"></i> New Maintenance Log
+                </h2>
                 
-                <div>
-                    <label class="block text-xs text-gray-500 uppercase mb-1">Category</label>
-                    <select id="itemCategory" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
-                        <option value="Vehicle">Vehicle</option>
-                        <option value="Property">Property</option>
-                        <option value="Equipment">Equipment</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs text-gray-500 uppercase mb-1">Part # / Specs</label>
-                    <input type="text" id="itemPart" placeholder="e.g. PF63 / 8 Quarts" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-yellow-400 font-mono outline-none">
-                </div>
-
-                <div class="flex items-center justify-between bg-gray-900 p-2 rounded border border-gray-600">
-                    <span class="text-xs text-gray-400 uppercase">Action Type</span>
-                    <div class="flex gap-2">
-                        <label class="flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="actionType" value="replace" checked class="accent-blue-500">
-                            <span class="text-sm">Replace</span>
-                        </label>
-                        <label class="flex items-center gap-1 cursor-pointer">
-                            <input type="radio" name="actionType" value="repair" class="accent-green-500">
-                            <span class="text-sm text-green-400">Repair</span>
-                        </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Date</label>
+                        <input type="date" id="itemDate" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Equipment/Vehicle Name</label>
+                        <input type="text" id="itemAssetName" placeholder="e.g. Work Truck, HVAC, Property" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Service Performed</label>
+                        <input type="text" id="itemName" placeholder="e.g. Oil Change 0W-20" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Cost ($)</label>
+                        <input type="number" id="itemCost" step="0.01" placeholder="0.00" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Category</label>
+                        <select id="itemCategory" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
+                            <option value="Vehicle">Vehicle</option>
+                            <option value="Property">Property</option>
+                            <option value="Equipment">Equipment</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Part # / Specs</label>
+                        <input type="text" id="itemPart" placeholder="e.g. PF63 / 8 Quarts" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-yellow-400 font-mono outline-none">
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-900 p-2 rounded border border-gray-600">
+                        <span class="text-xs text-gray-400 uppercase">Action Type</span>
+                        <div class="flex gap-2">
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" name="actionType" value="replace" checked class="accent-blue-500">
+                                <span class="text-sm">Replace</span>
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" name="actionType" value="repair" class="accent-green-500">
+                                <span class="text-sm text-green-400">Repair</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="mt-4">
-                <label class="block text-xs text-gray-500 uppercase mb-1">Notes (Torque, Gap, etc.)</label>
-                <textarea id="itemNotes" rows="2" placeholder="e.g. Torque drain plug to 18 ft-lbs" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-gray-300 text-sm outline-none"></textarea>
-            </div>
+                <div class="mt-4">
+                    <label class="block text-xs text-gray-500 uppercase mb-1">Notes (Torque, Gap, etc.)</label>
+                    <textarea id="itemNotes" rows="2" placeholder="e.g. Torque drain plug to 18 ft-lbs" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-gray-300 text-sm outline-none"></textarea>
+                </div>
 
-            <button type="submit" id="save-entry-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Entry</button>
-        </form>
+                <button type="submit" id="save-entry-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Entry</button>
+            </form>
 
             <div id="vault-list" class="grid gap-4"></div>
 
@@ -196,7 +186,7 @@
 
                 <div class="p-6">
                     <form id="auth-form" onsubmit="handleAuthSubmit(event); return false;" class="space-y-4">
-                        </form>
+                    </form>
                     <div id="auth-status-msg" class="mt-4 p-3 rounded text-xs text-center hidden"></div>
                 </div>
 
@@ -271,43 +261,70 @@
     </div>
 
     <div id="settings-modal" class="hidden fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-blue-950 w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
-            <div class="p-6 border-b border-gray-700 flex justify-between items-center bg-gradient-to-r from-blue-900/20 to-transparent">
+        <div class="bg-blue-950 w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center bg-gradient-to-r from-blue-900/20 to-transparent shrink-0">
                 <h2 class="text-xl font-bold text-white tracking-tight flex items-center">
                     <i class="fas fa-cog text-yellow-500 mr-2"></i>Settings
                 </h2>
                 <button onclick="toggleSettingsModal()" class="text-gray-500 hover:text-white transition-colors"><i class="fas fa-times text-lg"></i></button>
             </div>
 
-            <div class="p-6 space-y-6">
-                <div class="space-y-4">
-                    <h4 class="text-white font-bold text-sm">Data Management</h4>
-                    <p class="text-xs text-gray-400">Export your maintenance logs to a CSV file for backup or use in other applications.</p>
-
-                    <button onclick="exportToCSV()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fas fa-file-export text-sm"></i>
-                        <span>EXPORT DATA (CSV)</span>
+            <div class="p-6 space-y-6 overflow-y-auto flex-1">
+                <div class="space-y-2">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Data Management</h4>
+                    <button onclick="exportToCSV()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-file-export"></i> <span>EXPORT DATA (CSV)</span>
                     </button>
                 </div>
 
-                <div id="danger-zone" class="hidden pt-4 border-t border-red-900/50 space-y-4">
-                    <h4 class="text-red-500 font-bold text-sm">Danger Zone</h4>
-                    <p class="text-xs text-gray-400">Permanently delete your account and all associated data from our cloud servers.</p>
-                    <button onclick="toggleDeleteAccountModal()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-600/50 font-bold py-3 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fas fa-user-slash text-sm"></i>
-                        <span>DELETE MY ACCOUNT & DATA</span>
+                <div class="space-y-2 border-t border-gray-800 pt-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Legal & Safety</h4>
+                    <button onclick="toggleTosModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2.5 rounded-lg border border-gray-700 transition-all text-xs flex items-center justify-center gap-2">
+                        <i class="fas fa-balance-scale"></i> VIEW TERMS & SAFETY DISCLAIMER
                     </button>
                 </div>
 
-                <div class="pt-4 border-t border-gray-700">
-                    <button onclick="toggleSettingsModal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all">CLOSE</button>
+                <div class="space-y-2 border-t border-gray-800 pt-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Submit Feedback / Bugs</h4>
+                    <textarea id="feedbackText" rows="3" placeholder="Tell us what broke or what you need..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-300 outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+                    <button onclick="submitFeedback()" id="feedback-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg transition-all text-xs">
+                        SUBMIT FEEDBACK
+                    </button>
+                </div>
+
+                <div id="danger-zone" class="hidden pt-4 border-t border-red-900/50 space-y-2">
+                    <h4 class="text-red-500 font-bold text-sm uppercase tracking-wider">Danger Zone</h4>
+                    <p class="text-[11px] text-gray-400 leading-relaxed">Permanently delete your entire cloud account and all associated logs. This cannot be undone.</p>
+                    <button onclick="toggleDeleteAccountModal()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-600/40 font-bold py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-user-slash"></i> <span>DELETE MY ACCOUNT & DATA</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="p-4 bg-gray-900/50 text-center">
-                <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold flex items-center justify-center gap-2">
-                    <i class="fas fa-shield-alt text-blue-500/50"></i> MaintenanceVault Data Security
+            <div class="p-3 bg-gray-900/50 border-t border-gray-800 text-center shrink-0">
+                <button onclick="toggleSettingsModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded-lg transition-all text-xs mb-2">CLOSE</button>
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1">
+                    <i class="fas fa-shield-alt text-blue-500/30"></i> MaintenanceVault Secure Cloud
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tos-modal" class="hidden fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-gray-900 w-full max-w-2xl rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in max-h-[85vh] flex flex-col">
+            <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 shrink-0">
+                <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-gavel text-yellow-500 mr-2"></i>Terms of Service & Safety Disclaimer</h3>
+                <button onclick="toggleTosModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto text-xs text-gray-400 space-y-4 font-sans leading-relaxed">
+                <p><strong>Sections 1–8:</strong> Standard usage, licensing, service boundaries, and data processing policies apply under Donkey Jaw Services LLC execution parameters.</p>
+                <div class="bg-red-950/20 border border-red-900/40 p-4 rounded-xl text-red-200">
+                    <p class="font-bold uppercase tracking-wider text-xs mb-2 text-red-400">9. Not a Safety or Compliance Tool</p>
+                    <p>MaintenanceVault is a record-keeping and tracking tool only. It does not perform, certify, or guarantee the safety, airworthiness, roadworthiness, or compliance of any vehicle, equipment, or property tracked within the application. MaintenanceVault does not determine whether an item should be repaired or replaced. Decisions regarding repair, replacement, retirement, or continued use of any tracked item are solely the responsibility of the user. Users must independently consult and follow the applicable manufacturer specifications, OEM guidelines, and any federal, state, local, or industry-specific safety regulations governing the item in question, including but not limited to items where repair is not a permitted or safe alternative to replacement (e.g., safety harnesses after fall arrest, tires below legal tread depth, or components beyond manufacturer-certified tolerances). Donkey Jaw Services LLC assumes no liability for injury, death, property damage, or loss resulting from a user's decision to repair, replace, defer maintenance on, or continue using any item tracked through MaintenanceVault.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-950 border-t border-gray-800 shrink-0">
+                <button onclick="toggleTosModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">ACKNOWLEDGE & CLOSE</button>
             </div>
         </div>
     </div>
@@ -361,7 +378,6 @@
     </div>
 
     <script>
-        // Use Amazon Cognito Identity SDK natively
         const poolData = {
             UserPoolId: 'us-east-1_c9WukUWbT',
             ClientId: '4dbcdjlbao0o0otqnr29ul2rev'
@@ -435,7 +451,7 @@
                 }
                 try {
                     const token = session.getAccessToken().getJwtToken();
-                   const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
+                    const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
 
                     const pushResponse = await fetch(apiEndpoint, {
                         method: 'POST',
@@ -479,10 +495,104 @@
             });
         }
 
+        async function submitFeedback() {
+            const feedbackField = document.getElementById('feedbackText');
+            const feedback = feedbackField.value.trim();
+            if (!feedback) return alert("Feedback box cannot be blank.");
+
+            const btn = document.getElementById('feedback-btn');
+            btn.disabled = true;
+            btn.innerText = "SENDING...";
+
+            if (currentUser) {
+                currentUser.getSession(async (err, session) => {
+                    if (err) { alert("Session expired."); btn.disabled = false; btn.innerText = "SUBMIT FEEDBACK"; return; }
+                    try {
+                        const token = session.getAccessToken().getJwtToken();
+                        const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
+                        
+                        const feedbackPayload = [{
+                            itemId: `feedback-${crypto.randomUUID()}`,
+                            category: "FeedbackSystemLog",
+                            notes: feedback,
+                            updatedAt: new Date().toISOString()
+                        }];
+
+                        const response = await fetch(apiEndpoint, {
+                            method: 'POST',
+                            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+                            body: JSON.stringify(feedbackPayload)
+                        });
+
+                        if (!response.ok) throw new Error("Failed to post feedback data.");
+                        alert("Thank you! Your feedback has been logged securely to our database.");
+                        feedbackField.value = '';
+                    } catch (e) {
+                        alert("Error saving feedback: " + e.message);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerText = "SUBMIT FEEDBACK";
+                    }
+                });
+            } else {
+                alert("Please authenticate to submit system feedback logs.");
+                btn.disabled = false;
+                btn.innerText = "SUBMIT FEEDBACK";
+            }
+        }
+
+        async function handleAccountDeletion() {
+            const btn = document.getElementById('delete-confirm-btn');
+            const originalText = btn.innerText;
+            if (!currentUser) return alert("No active user session detected.");
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> PERMANENTLY ERASING...`;
+
+            currentUser.getSession(async (err, session) => {
+                if (err) {
+                    alert("Authentication expired. Please log back in before deleting your account.");
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    return;
+                }
+                try {
+                    const token = session.getAccessToken().getJwtToken();
+                    
+                    // Call the secure infrastructure endpoint to handle backend record purgation 
+                    const deletionEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
+                    const response = await fetch(deletionEndpoint, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': token }
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.message || "Cloud cleanup extraction rejected.");
+                    }
+
+                    // Client local storage wipe
+                    localStorage.removeItem('sustainVault');
+                    vaultData = [];
+                    
+                    alert("Account and cloud records successfully deleted.");
+                    toggleDeleteAccountModal();
+                    toggleSettingsModal();
+                    handleSignOut();
+                } catch (error) {
+                    console.error("Deletion Processing Failure:", error);
+                    alert("Account deletion failed: " + error.message);
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            });
+        }
+
         function renderVault() {
             const list = document.getElementById('vault-list');
             list.innerHTML = '';
             const filtered = vaultData.filter(item => {
+                if (item.category === 'FeedbackSystemLog') return false; // Filter out system log feedback objects
                 if(currentTab === 'dashboard') return true;
                 if(currentTab === 'vehicle') return item.category === 'Vehicle';
                 if(currentTab === 'property') return item.category === 'Property';
@@ -564,8 +674,9 @@
         }
 
         function updateStats() {
-            const repaired = vaultData.filter(i => i.type === 'repair').length;
-            const replaced = vaultData.filter(i => i.type === 'replace').length;
+            const validItems = vaultData.filter(i => i.category !== 'FeedbackSystemLog');
+            const repaired = validItems.filter(i => i.type === 'repair').length;
+            const replaced = validItems.filter(i => i.type === 'replace').length;
             const total = repaired + replaced;
             const co2Saved = repaired * 10; 
             document.getElementById('co2-stat').innerText = `${co2Saved} kg`;
@@ -591,7 +702,7 @@
             if (Notification.permission !== "granted") return;
             const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
             vaultData.forEach(item => {
-                if (new Date(item.date) < sixMonthsAgo) sendLocalNotification(item);
+                if (item.category !== 'FeedbackSystemLog' && new Date(item.date) < sixMonthsAgo) sendLocalNotification(item);
             });
         }
 
@@ -601,7 +712,7 @@
                     reg.showNotification('Maintenance Due', {
                         body: `Your ${item.name} (${item.part}) is due for service.`,
                         icon: 'icon-192.png',
-                        tag: `maint-${item.id}`,
+                        tag: `maint-${item.itemId}`,
                         actions: [{ action: 'view', title: 'View Details' }]
                     });
                 });
@@ -644,6 +755,11 @@
             modal.classList.toggle('hidden');
         }
 
+        function toggleTosModal() {
+            const modal = document.getElementById('tos-modal');
+            modal.classList.toggle('hidden');
+        }
+
         function toggleDeleteAccountModal() {
             const modal = document.getElementById('delete-account-modal');
             modal.classList.toggle('hidden');
@@ -663,6 +779,7 @@
             const csvRows = [headers.join(',')];
 
             vaultData.forEach(item => {
+                if (item.category === 'FeedbackSystemLog') return;
                 const values = headers.map(header => {
                     const val = item[header] || '';
                     const escaped = ('' + val).replace(/"/g, '""');
@@ -757,6 +874,14 @@
                     <input type="text" name="code" id="auth-code" autocomplete="one-time-code" required placeholder="123456" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:border-yellow-600 outline-none transition-all">
                 </div>`;
 
+            const signupTermsCheckbox = `
+                <div class="flex items-start gap-2 pt-2">
+                    <input type="checkbox" id="signup-tos-agree" required class="mt-1 accent-yellow-600 cursor-pointer">
+                    <label for="signup-tos-agree" class="text-[11px] text-gray-400 leading-tight cursor-pointer select-none">
+                        I explicitly accept and agree to the <a href="javascript:void(0)" onclick="toggleTosModal()" class="text-blue-400 underline hover:text-blue-300">Terms of Service & Safety Disclaimer</a>.
+                    </label>
+                </div>`;
+
             const submitButton = (text) => `
                 <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                     <span>${text}</span>
@@ -773,7 +898,7 @@
             } else if (mode === 'signup') {
                 tabSignup.classList.add('text-yellow-500', 'border-b-2', 'border-yellow-500');
                 tabSignin.classList.add('text-gray-500', 'hover:text-gray-300');
-                formHTML = emailField(currentEmail) + passwordField('Password', 'auth-password', 'new-password') + passwordField('Confirm Password', 'auth-confirm-password', 'new-password') + submitButton('CREATE ACCOUNT');
+                formHTML = emailField(currentEmail) + passwordField('Password', 'auth-password', 'new-password') + passwordField('Confirm Password', 'auth-confirm-password', 'new-password') + signupTermsCheckbox + submitButton('CREATE ACCOUNT');
             } else if (mode === 'confirm') {
                 authTabs.classList.add('hidden');
                 verifyHeader.classList.remove('hidden');
@@ -819,6 +944,11 @@
                 else if (authMode === 'signup') {
                     if (!password) return showAuthStatus("Password is required");
                     if (password !== confirmPassword) return showAuthStatus("Passwords do not match");
+                    
+                    const termsCheck = document.getElementById('signup-tos-agree');
+                    if (!termsCheck || !termsCheck.checked) {
+                        return showAuthStatus("You must accept the Terms of Service to sign up.");
+                    }
 
                     const attributeList = [
                         new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'email', Value: email }),
@@ -888,21 +1018,18 @@
                         
                         currentUser = cognitoUser;
 
-                        // Show App UI Immediately
                         const showElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone'];
                         showElements.forEach(id => {
                             const el = document.getElementById(id);
                             if (el) el.classList.remove('hidden');
                         });
 
-                        // Hide Auth UI
                         const hideElements = ['auth-section', 'login-btn'];
                         hideElements.forEach(id => {
                             const el = document.getElementById(id);
                             if (el) el.classList.add('hidden');
                         });
 
-                        // Initialize RevenueCat IMMEDIATELY (Out of the flaky AWS callback)
                         if (typeof Purchases !== 'undefined') {
                             try {
                                 const rcClass = Purchases.Purchases || Purchases;
@@ -916,7 +1043,6 @@
                             }
                         }
 
-                        // Fetch UI data (Email, Tier)
                         cognitoUser.getUserAttributes((err, attributes) => {
                             if (!err && attributes) {
                                 const tierAttr = attributes.find(a => a.getName() === 'custom:tier');
@@ -930,7 +1056,7 @@
                                 if (userEmailElem) {
                                     userEmailElem.innerText = emailAttr ? emailAttr.getValue() : cognitoUser.getUsername();
                                 }
-                                renderVault(); // re-render once AWS tier loads
+                                renderVault();
                             }
                         });
 
@@ -968,8 +1094,6 @@
         async function updateTierFromRevenueCat() {
             try {
                 let rc = window.rcInstance;
-                
-                // Fallback kickstart
                 if (!rc && typeof Purchases !== 'undefined' && currentUser) {
                     const rcClass = Purchases.Purchases || Purchases;
                     rc = rcClass.configure({ apiKey: REVENUECAT_PUBLIC_API_KEY, appUserId: currentUser.getUsername() });
@@ -1030,8 +1154,6 @@
         async function handleUpgrade() {
             try {
                 let rc = window.rcInstance;
-                
-                // Bulletproof Fallback: If it's missing when you click the button, boot it up right now.
                 if (!rc && typeof Purchases !== 'undefined' && currentUser) {
                     const rcClass = Purchases.Purchases || Purchases;
                     rc = rcClass.configure({ apiKey: REVENUECAT_PUBLIC_API_KEY, appUserId: currentUser.getUsername() });
@@ -1060,33 +1182,6 @@
             }
         }
 
-        async function handleAccountDeletion() {
-            const btn = document.getElementById('delete-confirm-btn');
-            const originalText = btn.innerText;
-            try {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> DELETING...`;
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                alert("Your account and data have been successfully deleted.");
-                toggleDeleteAccountModal();
-                toggleSettingsModal();
-                handleSignOut();
-            } catch (error) {
-                console.error("Deletion Error:", error);
-                alert("An error occurred during account deletion.");
-                btn.disabled = false;
-                btn.innerText = originalText;
-            }
-        }
-
-        function handleSignOut() {
-            if (currentUser) {
-                currentUser.signOut();
-            }
-            checkAuthState();
-        }
-
-        // --- THE FIX: Rock-Solid Initialization Function ---
         async function initializeApp() {
             await checkAuthState();
             
@@ -1106,7 +1201,6 @@
             document.getElementById('input-form').addEventListener('submit', addItem);
         }
 
-        // Run the app!
         initializeApp();
     </script>
 </body>
