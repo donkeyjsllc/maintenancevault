@@ -1,86 +1,105 @@
+const { CognitoIdentityProviderClient, AdminDeleteUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, QueryCommand, PutCommand } = require("@aws-sdk/lib-dynamodb");
+const { DynamoDBDocumentClient, ScanCommand, DeleteCommand, PutCommand } = require("@aws-sdk/lib-dynamodb");
 
-const client = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(client);
+const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
+const dbClient = new DynamoDBClient({ region: "us-east-1" });
+const docClient = DynamoDBDocumentClient.from(dbClient);
 
-const TABLE_NAME = process.env.TABLE_NAME || "MaintenanceVault-Items";
+// UPDATE WITH YOUR ACTUAL COGNITO USER POOL ID
+const USER_POOL_ID = "us-east-1_c9WukUWbT"; 
 
 exports.handler = async (event) => {
-    console.log("Event:", JSON.stringify(event, null, 2));
+    const httpMethod = event.httpMethod;
 
-    // In a real API Gateway setup, the user ID (sub) would be in the authorizer context.
-    const userId = event.requestContext?.authorizer?.claims?.sub || "test-user-id";
-    const method = event.httpMethod;
-
-    try {
-        if (method === "GET") {
-            // Fetch all items for this user using Query (Scales better than Scan)
-            const params = {
-                TableName: TABLE_NAME,
-                KeyConditionExpression: "userId = :uid",
-                ExpressionAttributeValues: {
-                    ":uid": userId,
-                },
-            };
-
-            const data = await docClient.send(new QueryCommand(params));
-
-            return {
-                statusCode: 200,
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data.Items || []),
-            };
-        }
-
-        else if (method === "POST") {
-            const body = JSON.parse(event.body);
-            const items = Array.isArray(body) ? body : [body];
-
-            const results = [];
-            for (const item of items) {
-                // Ensure the item belongs to the user and has the required Partition Key
-                item.userId = userId;
-
-                // Conditional Put: Only update if the item doesn't exist OR the incoming updatedAt is newer
-                const putParams = {
-                    TableName: TABLE_NAME,
-                    Item: item,
-                    // ConditionExpression: "attribute_not_exists(itemId) OR updatedAt < :newAt",
-                    // ExpressionAttributeValues: { ":newAt": item.updatedAt }
-                };
-
-                await docClient.send(new PutCommand(putParams));
-                results.push(item.itemId);
-            }
-
-            return {
-                statusCode: 200,
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ message: "Sync successful", updatedItemIds: results }),
-            };
-        }
-
+    // 1. THE FIX: Handle the browser's invisible CORS Preflight check
+    if (httpMethod === "OPTIONS") {
         return {
-            statusCode: 405,
-            body: JSON.stringify({ message: "Method Not Allowed" }),
-        };
-
-    } catch (error) {
-        console.error("Lambda Error:", error);
-        return {
-            statusCode: 500,
+            statusCode: 200,
             headers: {
                 "Access-Control-Allow-Origin": "*",
-                "Content-Type": "application/json"
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET,DELETE",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization"
             },
-            body: JSON.stringify({ message: "Internal Server Error", error: error.message }),
+            body: JSON.stringify({ message: "CORS preflight successful" })
+        };
+    }
+
+    // 2. Extract User Identity from the Cognito Authorization context token
+    const userId = event.requestContext?.authorizer?.claims?.username || event.requestContext?.authorizer?.claims?.["cognito:username"];
+    if (!userId) {
+        return { statusCode: 401, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ message: "Unauthorized" }) };
+    }
+
+    try {
+        if (httpMethod === "DELETE") {
+            // Scan DynamoDB and fetch all logs matching this user
+            const scanParams = {
+                TableName: "MaintenanceVault-Items",
+                FilterExpression: "userId = :uid",
+                ExpressionAttributeValues: { ":uid": userId }
+            };
+            const records = await docClient.send(new ScanCommand(scanParams));
+
+            // Erase each individual log record from DynamoDB
+            for (const record of records.Items || []) {
+                await docClient.send(new DeleteCommand({
+                    TableName: "MaintenanceVault-Items",
+                    Key: { itemId: record.itemId }
+                }));
+            }
+
+            // Fire Admin command to purge the profile from Cognito
+            await cognitoClient.send(new AdminDeleteUserCommand({
+                UserPoolId: USER_POOL_ID,
+                Username: userId
+            }));
+
+            return {
+                statusCode: 200,
+                headers: { "Access-Control-Allow-Origin": "*" },
+                body: JSON.stringify({ message: "Account and records purged successfully." })
+            };
+        }
+        
+        // This handles standard POST requests (saving items & saving feedback)
+        if (httpMethod === "POST") {
+            const body = JSON.parse(event.body);
+            for (const item of body) {
+                await docClient.send(new PutCommand({
+                    TableName: "MaintenanceVault-Items",
+                    Item: { ...item, userId: userId }
+                }));
+            }
+            return {
+                statusCode: 200,
+                headers: { "Access-Control-Allow-Origin": "*" },
+                body: JSON.stringify({ message: "Data synced successfully." })
+            };
+        }
+
+        // This handles GET requests (pulling data to the app)
+        if (httpMethod === "GET") {
+            const scanParams = {
+                TableName: "MaintenanceVault-Items",
+                FilterExpression: "userId = :uid",
+                ExpressionAttributeValues: { ":uid": userId }
+            };
+            const records = await docClient.send(new ScanCommand(scanParams));
+            return {
+                statusCode: 200,
+                headers: { "Access-Control-Allow-Origin": "*" },
+                body: JSON.stringify(records.Items || [])
+            };
+        }
+        
+        return { statusCode: 405, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ message: "Method Not Allowed" }) };
+    } catch (error) {
+        console.error("Operation failure:", error);
+        return {
+            statusCode: 500,
+            headers: { "Access-Control-Allow-Origin": "*" },
+            body: JSON.stringify({ message: "Internal Error", error: error.message })
         };
     }
 };
