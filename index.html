@@ -1003,7 +1003,18 @@
                 showAuthStatus(error.message || "An error occurred");
             }
         }
-
+function handleSignOut() {
+            if (currentUser) {
+                currentUser.signOut();
+                currentUser = null;
+            }
+            // Clear local data for security
+            localStorage.removeItem('sustainVault');
+            vaultData = [];
+            
+            // Force the UI back to the login screen
+            handleAuthFailure(new Error("Signed out securely"));
+        }
         function checkAuthState() {
             return new Promise((resolve) => {
                 const cognitoUser = userPool.getCurrentUser();
