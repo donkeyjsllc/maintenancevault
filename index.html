@@ -450,7 +450,7 @@
                     return;
                 }
                 try {
-                    const token = session.getAccessToken().getJwtToken();
+                    const token = session.getIdToken().getJwtToken();
                     const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
 
                     const pushResponse = await fetch(apiEndpoint, {
@@ -508,7 +508,7 @@
                 currentUser.getSession(async (err, session) => {
                     if (err) { alert("Session expired."); btn.disabled = false; btn.innerText = "SUBMIT FEEDBACK"; return; }
                     try {
-                        const token = session.getAccessToken().getJwtToken();
+                        const token = session.getIdToken().getJwtToken();
                         const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
                         
                         const feedbackPayload = [{
@@ -557,7 +557,7 @@
                     return;
                 }
                 try {
-                    const token = session.getAccessToken().getJwtToken();
+                    const token = session.getIdToken().getJwtToken();
                     
                     // Call the secure infrastructure endpoint to handle backend record purgation 
                     const deletionEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
