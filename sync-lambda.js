@@ -1,6 +1,6 @@
-const { CognitoIdentityProviderClient, AdminDeleteUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, ScanCommand, DeleteCommand, PutCommand } = require("@aws-sdk/lib-dynamodb");
+import { CognitoIdentityProviderClient, AdminDeleteUserCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, ScanCommand, DeleteCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
 const dbClient = new DynamoDBClient({ region: "us-east-1" });
@@ -9,10 +9,10 @@ const docClient = DynamoDBDocumentClient.from(dbClient);
 // UPDATE WITH YOUR ACTUAL COGNITO USER POOL ID
 const USER_POOL_ID = "us-east-1_c9WukUWbT"; 
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const httpMethod = event.httpMethod;
 
-    // 1. THE FIX: Handle the browser's invisible CORS Preflight check
+    // 1. Handle the browser's invisible CORS Preflight check
     if (httpMethod === "OPTIONS") {
         return {
             statusCode: 200,
