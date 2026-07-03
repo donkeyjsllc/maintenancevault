@@ -495,7 +495,7 @@
             });
         }
 
-        async function submitFeedback() {
+      async function submitFeedback() {
             const feedbackField = document.getElementById('feedbackText');
             const feedback = feedbackField.value.trim();
             if (!feedback) return alert("Feedback box cannot be blank.");
@@ -524,11 +524,16 @@
                             body: JSON.stringify(feedbackPayload)
                         });
 
-                        if (!response.ok) throw new Error("Failed to post feedback data.");
+                        // THIS IS THE NEW DIAGNOSTIC BLOCK
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`AWS STATUS ${response.status}: ${errorText}`);
+                        }
+
                         alert("Thank you! Your feedback has been logged securely to our database.");
                         feedbackField.value = '';
                     } catch (e) {
-                        alert("Error saving feedback: " + e.message);
+                        alert("SYSTEM ERROR DETECTED:\n\n" + e.message);
                     } finally {
                         btn.disabled = false;
                         btn.innerText = "SUBMIT FEEDBACK";
