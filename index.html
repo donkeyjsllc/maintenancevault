@@ -47,8 +47,8 @@
             <div class="flex flex-col items-center sm:items-end w-full sm:w-auto">
                 <div id="user-display" class="hidden text-[10px] text-blue-400 font-bold mb-2 flex items-center justify-center sm:justify-end gap-3 w-full">
                     <i id="sync-indicator" class="fas fa-cloud text-gray-600 hidden" title="Cloud Sync Active"></i>
-                   <span id="user-email" class="truncate max-w-[140px] sm:max-w-[200px]"></span>
-<span id="pro-badge" class="hidden bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase shadow-sm shrink-0">PRO</span>
+                    <span id="user-email" class="truncate max-w-[140px] sm:max-w-[200px]"></span>
+                    <span id="pro-badge" class="hidden bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase shadow-sm shrink-0">PRO</span>
                     <button id="sign-out-btn" onclick="handleSignOut()" class="bg-red-900/30 text-red-400 hover:bg-red-600 hover:text-white px-2 py-1 rounded transition-colors flex items-center gap-1 border border-red-900/50 shrink-0">
                         <i class="fas fa-sign-out-alt"></i> LOGOUT
                     </button>
@@ -233,7 +233,7 @@
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg">Recommended</div>
                     <h3 class="text-blue-400 uppercase text-xs font-bold tracking-widest mb-2">Pro</h3>
                     <div class="text-4xl font-bold text-white mb-1">$49.99<span class="text-sm font-normal text-gray-500 ml-1">/ yr</span></div>
-                    <p class="text-[10px] text-gray-500 mb-6 italic">Best for Individuals</p>
+                    <div class="text-xs text-gray-400 font-semibold mb-6">or $4.99 / mo</div>
                     <ul class="space-y-4 text-sm text-gray-300 mb-8 flex-grow">
                         <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>Unlimited Assets</li>
                         <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>AWS Cloud Sync (Multi-device)</li>
@@ -392,6 +392,7 @@
         let currentUser = null;
         let authMode = 'signin';
         let itemToDelete = null;
+        let editItemId = null;
 
         function addItem(event) {
             if (event) event.preventDefault();
@@ -404,30 +405,44 @@
             if(!date) return alert("Date is required");
 
             const isPro = currentUser && currentUser.tier === 'Pro';
-            if (!isPro && vaultData.length >= 5) {
+            if (!isPro && vaultData.length >= 5 && !editItemId) {
                 togglePaywall();
                 return;
             }
 
-            const newItem = {
-                itemId: crypto.randomUUID(),
-                assetName: assetName,
-                name: name,
-                category: document.getElementById('itemCategory').value,
-                part: document.getElementById('itemPart').value,
-                type: document.querySelector('input[name="actionType"]:checked').value,
-                notes: document.getElementById('itemNotes').value,
-                date: date,
-                cost: parseFloat(cost) || 0,
-                updatedAt: new Date().toISOString()
-            };
-            vaultData.unshift(newItem);
+            if (editItemId) {
+                const index = vaultData.findIndex(i => i.itemId === editItemId);
+                if (index > -1) {
+                    vaultData[index] = {
+                        ...vaultData[index],
+                        assetName, name, date, cost: parseFloat(cost) || 0,
+                        category: document.getElementById('itemCategory').value,
+                        part: document.getElementById('itemPart').value,
+                        type: document.querySelector('input[name="actionType"]:checked').value,
+                        notes: document.getElementById('itemNotes').value,
+                        updatedAt: new Date().toISOString()
+                    };
+                }
+                editItemId = null;
+                document.getElementById('save-entry-btn').innerText = 'Save Entry';
+            } else {
+                const newItem = {
+                    itemId: crypto.randomUUID(),
+                    assetName, name, date, cost: parseFloat(cost) || 0,
+                    category: document.getElementById('itemCategory').value,
+                    part: document.getElementById('itemPart').value,
+                    type: document.querySelector('input[name="actionType"]:checked').value,
+                    notes: document.getElementById('itemNotes').value,
+                    updatedAt: new Date().toISOString()
+                };
+                vaultData.unshift(newItem);
+            }
+            
             localStorage.setItem('sustainVault', JSON.stringify(vaultData));
-
             if(currentTab !== 'dashboard') toggleForm();
-
             renderVault();
             updateStats();
+            
             document.getElementById('itemAssetName').value = '';
             document.getElementById('itemName').value = '';
             document.getElementById('itemPart').value = '';
@@ -435,6 +450,32 @@
             document.getElementById('itemCost').value = '';
             document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
             syncToAWS();
+        }
+
+        function editItem(itemId) {
+            const item = vaultData.find(i => i.itemId === itemId);
+            if(!item) return;
+            
+            editItemId = itemId;
+            
+            document.getElementById('itemAssetName').value = item.assetName || '';
+            document.getElementById('itemName').value = item.name || '';
+            document.getElementById('itemDate').value = item.date || '';
+            document.getElementById('itemCost').value = item.cost || '';
+            document.getElementById('itemCategory').value = item.category || 'Vehicle';
+            document.getElementById('itemPart').value = item.part || '';
+            document.getElementById('itemNotes').value = item.notes || '';
+            
+            const typeRadios = document.getElementsByName('actionType');
+            for(let r of typeRadios) {
+                if(r.value === item.type) r.checked = true;
+            }
+
+            document.getElementById('save-entry-btn').innerText = 'Update Entry';
+            
+            const form = document.getElementById('input-form');
+            if(form.classList.contains('hidden')) toggleForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function syncToAWS() {
@@ -496,7 +537,7 @@
             });
         }
 
-      async function submitFeedback() {
+        async function submitFeedback() {
             const feedbackField = document.getElementById('feedbackText');
             const feedback = feedbackField.value.trim();
             if (!feedback) return alert("Feedback box cannot be blank.");
@@ -525,7 +566,6 @@
                             body: JSON.stringify(feedbackPayload)
                         });
 
-                        // THIS IS THE NEW DIAGNOSTIC BLOCK
                         if (!response.ok) {
                             const errorText = await response.text();
                             throw new Error(`AWS STATUS ${response.status}: ${errorText}`);
@@ -565,7 +605,6 @@
                 try {
                     const token = session.getIdToken().getJwtToken();
                     
-                    // Call the secure infrastructure endpoint to handle backend record purgation 
                     const deletionEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
                     const response = await fetch(deletionEndpoint, {
                         method: 'DELETE',
@@ -577,7 +616,6 @@
                         throw new Error(errData.message || "Cloud cleanup extraction rejected.");
                     }
 
-                    // Client local storage wipe
                     localStorage.removeItem('sustainVault');
                     vaultData = [];
                     
@@ -598,7 +636,7 @@
             const list = document.getElementById('vault-list');
             list.innerHTML = '';
             const filtered = vaultData.filter(item => {
-                if (item.category === 'FeedbackSystemLog') return false; // Filter out system log feedback objects
+                if (item.category === 'FeedbackSystemLog') return false; 
                 if(currentTab === 'dashboard') return true;
                 if(currentTab === 'vehicle') return item.category === 'Vehicle';
                 if(currentTab === 'property') return item.category === 'Property';
@@ -630,7 +668,8 @@
 
                 list.innerHTML += `
                     <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-sm relative group hover:border-blue-500 transition-colors">
-                        <button onclick="deleteItem('${item.itemId}')" class="absolute top-3 right-3 text-gray-600 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
+                        <button onclick="editItem('${item.itemId}')" class="absolute top-3 right-10 text-gray-500 hover:text-blue-400 p-2"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteItem('${item.itemId}')" class="absolute top-3 right-2 text-gray-600 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
                         <div class="flex items-start gap-4">
                             <div class="mt-1 text-2xl text-gray-500 bg-gray-900 p-3 rounded-full h-12 w-12 flex items-center justify-center border border-gray-700"><i class="fas ${icon}"></i></div>
                             <div class="flex-1">
@@ -1009,7 +1048,8 @@
                 showAuthStatus(error.message || "An error occurred");
             }
         }
-function handleSignOut() {
+
+        function handleSignOut() {
             if (currentUser) {
                 currentUser.signOut();
                 currentUser = null;
@@ -1021,6 +1061,7 @@ function handleSignOut() {
             // Force the UI back to the login screen
             handleAuthFailure(new Error("Signed out securely"));
         }
+
         function checkAuthState() {
             return new Promise((resolve) => {
                 const cognitoUser = userPool.getCurrentUser();
@@ -1122,8 +1163,13 @@ function handleSignOut() {
                 const customerInfo = await rc.getCustomerInfo();
                 if (customerInfo.entitlements.active['Premium']) {
                     currentUser.tier = 'Pro';
+                    const badge = document.getElementById('pro-badge');
+                    if(badge) badge.classList.remove('hidden');
+                    syncToAWS(); // Force sync now that we verified Pro status
                 } else {
                     currentUser.tier = 'Free';
+                    const badge = document.getElementById('pro-badge');
+                    if(badge) badge.classList.add('hidden');
                 }
                 renderVault();
             } catch (e) {
