@@ -1247,10 +1247,25 @@
                 const offerings = await rc.getOfferings();
                 
                 if (offerings.current && offerings.current.availablePackages.length > 0) {
-                    // Try to find the specific Monthly or Annual package
-                    let packageToBuy = offerings.current.availablePackages.find(p => p.identifier === packageType || p.packageType === packageType);
+                    let packageToBuy;
                     
-                    // Fallback just in case
+                    if (packageType === 'MONTHLY') {
+                        // Smart search: looks for standard MONTHLY type OR any custom ID containing 'mo' or 'monthly'
+                        packageToBuy = offerings.current.availablePackages.find(p => 
+                            p.packageType === 'MONTHLY' || 
+                            p.identifier.toLowerCase().includes('mo') || 
+                            p.identifier.toLowerCase().includes('monthly')
+                        );
+                    } else {
+                        // Smart search for annual
+                        packageToBuy = offerings.current.availablePackages.find(p => 
+                            p.packageType === 'ANNUAL' || 
+                            p.identifier.toLowerCase().includes('yr') || 
+                            p.identifier.toLowerCase().includes('annual')
+                        );
+                    }
+                    
+                    // Final fallback if the smart search still misses
                     if (!packageToBuy) packageToBuy = offerings.current.availablePackages[0];
 
                     await rc.purchase({ rcPackage: packageToBuy });
