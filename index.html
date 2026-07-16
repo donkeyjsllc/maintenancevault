@@ -226,7 +226,7 @@
                         <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i>Offline LocalStorage</li>
                         <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i>Basic Circular Economy Score</li>
                     </ul>
-                    <button id="paywall-free-btn" disabled class="w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest">Current Plan</button>
+                    <button id="paywall-free-btn" onclick="handleDowngradeNotice()" class="w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest">Switch to Free</button>
                 </div>
 
                 <div class="p-8 flex flex-col bg-blue-900/10 border-x-0 md:border-x border-blue-500/50 relative">
@@ -1064,11 +1064,8 @@
                 currentUser.signOut();
                 currentUser = null;
             }
-            // Clear local data for security
             localStorage.removeItem('sustainVault');
             vaultData = [];
-            
-            // Force the UI back to the login screen
             handleAuthFailure(new Error("Signed out securely"));
         }
 
@@ -1171,13 +1168,18 @@
                 if (!rc) return;
 
                 const customerInfo = await rc.getCustomerInfo();
-                if (customerInfo.entitlements.active['Premium']) {
+                const activePremium = customerInfo.entitlements.active['Premium'];
+                
+                if (activePremium) {
                     currentUser.tier = 'Pro';
+                    // Save active product identifier (Monthly vs Annual product code)
+                    currentUser.activeProduct = activePremium.productIdentifier;
                     const badge = document.getElementById('pro-badge');
                     if(badge) badge.classList.remove('hidden');
-                    syncToAWS(); // Force sync now that we verified Pro status
+                    syncToAWS();
                 } else {
                     currentUser.tier = 'Free';
+                    currentUser.activeProduct = null;
                     const badge = document.getElementById('pro-badge');
                     if(badge) badge.classList.add('hidden');
                 }
@@ -1189,6 +1191,10 @@
 
         function joinProComWaitlist() {
             window.location.href = "mailto:support@maintenancevault.com?subject=ProCom Waitlist Interest&body=I am interested in the ProCom tier for fleets and crews. Please notify me when it's available.";
+        }
+
+        function handleDowngradeNotice() {
+            alert("To downgrade or cancel your subscription securely, please manage it directly through your emailed receipt layout link or contact support@maintenancevault.com.");
         }
 
         function togglePaywall() {
@@ -1204,11 +1210,14 @@
                 const proMoBtn = document.getElementById('paywall-pro-mo-btn');
                 const proYrBtn = document.getElementById('paywall-pro-yr-btn');
                 const tier = currentUser.tier || 'Free';
+                const activeProd = currentUser.activeProduct || '';
 
+                // Reset Free Button State
                 freeBtn.disabled = false;
                 freeBtn.innerText = "Switch to Free";
                 freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest";
 
+                // Reset Paid Buttons State
                 proMoBtn.disabled = false;
                 proMoBtn.innerHTML = "Monthly<br>$4.99";
                 proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center";
@@ -1220,15 +1229,18 @@
                 if (tier === 'Free') {
                     freeBtn.disabled = true;
                     freeBtn.innerText = "Current Plan";
-                    freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest";
+                    freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-800 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest";
                 } else if (tier === 'Pro') {
-                    proMoBtn.disabled = true;
-                    proMoBtn.innerHTML = "Current<br>Plan";
-                    proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900/50 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
-                    
-                    proYrBtn.disabled = true;
-                    proYrBtn.innerHTML = "Current<br>Plan";
-                    proYrBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900/50 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center";
+                    // Match with the product catalog IDs from your dashboard string setup
+                    if (activeProd.includes('Monthly') || activeProd.includes('mo')) {
+                        proMoBtn.disabled = true;
+                        proMoBtn.innerHTML = "Current Plan";
+                        proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-950 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
+                    } else {
+                        proYrBtn.disabled = true;
+                        proYrBtn.innerHTML = "Current Plan";
+                        proYrBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-950 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
+                    }
                 }
             }
         }
@@ -1250,14 +1262,12 @@
                     let packageToBuy;
                     
                     if (packageType === 'MONTHLY') {
-                        // Smart search: looks for standard MONTHLY type OR any custom ID containing 'mo' or 'monthly'
                         packageToBuy = offerings.current.availablePackages.find(p => 
                             p.packageType === 'MONTHLY' || 
                             p.identifier.toLowerCase().includes('mo') || 
                             p.identifier.toLowerCase().includes('monthly')
                         );
                     } else {
-                        // Smart search for annual
                         packageToBuy = offerings.current.availablePackages.find(p => 
                             p.packageType === 'ANNUAL' || 
                             p.identifier.toLowerCase().includes('yr') || 
@@ -1265,7 +1275,6 @@
                         );
                     }
                     
-                    // Final fallback if the smart search still misses
                     if (!packageToBuy) packageToBuy = offerings.current.availablePackages[0];
 
                     await rc.purchase({ rcPackage: packageToBuy });
