@@ -213,7 +213,7 @@
         <i class="fas fa-plus text-xl"></i>
     </button>
 
-    <div id="paywall-modal" class="hidden fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div id="paywall-modal" class="hidden fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-gray-800 w-full max-w-5xl rounded-2xl border border-blue-500/30 shadow-2xl overflow-y-auto max-h-[90vh] animate-fade-in relative">
             <button onclick="togglePaywall()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors z-10"><i class="fas fa-times text-xl"></i></button>
 
@@ -239,7 +239,10 @@
                         <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>AWS Cloud Sync (Multi-device)</li>
                         <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>PDF Exporting</li>
                     </ul>
-                    <button id="paywall-pro-btn" onclick="handleUpgrade()" class="w-full py-4 px-4 rounded-xl font-bold transition-all bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 uppercase text-[10px] tracking-widest">Upgrade to Pro</button>
+                    <div class="flex gap-2 w-full mt-auto">
+                        <button id="paywall-pro-mo-btn" onclick="handleUpgrade('MONTHLY')" class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center">Monthly<br>$4.99</button>
+                        <button id="paywall-pro-yr-btn" onclick="handleUpgrade('ANNUAL')" class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 uppercase text-[10px] tracking-widest text-center">Yearly<br>$49.99</button>
+                    </div>
                 </div>
 
                 <div class="p-8 flex flex-col">
@@ -273,7 +276,7 @@
             <div class="p-6 space-y-6 overflow-y-auto flex-1">
                 <div class="space-y-2">
                     <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Subscription</h4>
-                    <button onclick="togglePaywall()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                    <button onclick="toggleSettingsModal(); togglePaywall()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
                         <i class="fas fa-crown"></i> <span>MANAGE PLAN / UPGRADE</span>
                     </button>
                 </div>
@@ -1198,30 +1201,39 @@
 
             if (!modal.classList.contains('hidden')) {
                 const freeBtn = document.getElementById('paywall-free-btn');
-                const proBtn = document.getElementById('paywall-pro-btn');
+                const proMoBtn = document.getElementById('paywall-pro-mo-btn');
+                const proYrBtn = document.getElementById('paywall-pro-yr-btn');
                 const tier = currentUser.tier || 'Free';
 
                 freeBtn.disabled = false;
                 freeBtn.innerText = "Switch to Free";
                 freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest";
 
-                proBtn.disabled = false;
-                proBtn.innerText = "Upgrade to Pro";
-                proBtn.className = "w-full py-4 px-4 rounded-xl font-bold transition-all bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 uppercase text-[10px] tracking-widest";
+                proMoBtn.disabled = false;
+                proMoBtn.innerHTML = "Monthly<br>$4.99";
+                proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center";
+
+                proYrBtn.disabled = false;
+                proYrBtn.innerHTML = "Yearly<br>$49.99";
+                proYrBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 uppercase text-[10px] tracking-widest text-center";
 
                 if (tier === 'Free') {
                     freeBtn.disabled = true;
                     freeBtn.innerText = "Current Plan";
                     freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest";
                 } else if (tier === 'Pro') {
-                    proBtn.disabled = true;
-                    proBtn.innerText = "Current Plan";
-                    proBtn.className = "w-full py-4 px-4 rounded-xl font-bold transition-all bg-blue-900/50 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest";
+                    proMoBtn.disabled = true;
+                    proMoBtn.innerHTML = "Current<br>Plan";
+                    proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900/50 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
+                    
+                    proYrBtn.disabled = true;
+                    proYrBtn.innerHTML = "Current<br>Plan";
+                    proYrBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900/50 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center";
                 }
             }
         }
 
-        async function handleUpgrade() {
+        async function handleUpgrade(packageType) {
             try {
                 let rc = window.rcInstance;
                 if (!rc && typeof Purchases !== 'undefined' && currentUser) {
@@ -1235,7 +1247,12 @@
                 const offerings = await rc.getOfferings();
                 
                 if (offerings.current && offerings.current.availablePackages.length > 0) {
-                    const packageToBuy = offerings.current.availablePackages[0];
+                    // Try to find the specific Monthly or Annual package
+                    let packageToBuy = offerings.current.availablePackages.find(p => p.identifier === packageType || p.packageType === packageType);
+                    
+                    // Fallback just in case
+                    if (!packageToBuy) packageToBuy = offerings.current.availablePackages[0];
+
                     await rc.purchase({ rcPackage: packageToBuy });
                 } else {
                     throw new Error("No products available for purchase.");
