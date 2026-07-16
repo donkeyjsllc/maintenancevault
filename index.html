@@ -1172,7 +1172,6 @@
                 
                 if (activePremium) {
                     currentUser.tier = 'Pro';
-                    // Save active product identifier (Monthly vs Annual product code)
                     currentUser.activeProduct = activePremium.productIdentifier;
                     const badge = document.getElementById('pro-badge');
                     if(badge) badge.classList.remove('hidden');
@@ -1212,12 +1211,10 @@
                 const tier = currentUser.tier || 'Free';
                 const activeProd = currentUser.activeProduct || '';
 
-                // Reset Free Button State
                 freeBtn.disabled = false;
                 freeBtn.innerText = "Switch to Free";
                 freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest";
 
-                // Reset Paid Buttons State
                 proMoBtn.disabled = false;
                 proMoBtn.innerHTML = "Monthly<br>$4.99";
                 proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center";
@@ -1231,8 +1228,7 @@
                     freeBtn.innerText = "Current Plan";
                     freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-800 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest";
                 } else if (tier === 'Pro') {
-                    // Match with the product catalog IDs from your dashboard string setup
-                    if (activeProd.includes('Monthly') || activeProd.includes('mo')) {
+                    if (activeProd.includes('Monthly') || activeProd.includes('mo') || activeProd === 'entlfca47f2ebc') {
                         proMoBtn.disabled = true;
                         proMoBtn.innerHTML = "Current Plan";
                         proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-950 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
@@ -1263,6 +1259,8 @@
                     
                     if (packageType === 'MONTHLY') {
                         packageToBuy = offerings.current.availablePackages.find(p => 
+                            p.identifier === 'entlfca47f2ebc' ||
+                            p.product.identifier === 'entlfca47f2ebc' ||
                             p.packageType === 'MONTHLY' || 
                             p.identifier.toLowerCase().includes('mo') || 
                             p.identifier.toLowerCase().includes('monthly')
