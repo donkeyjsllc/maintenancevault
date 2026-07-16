@@ -952,7 +952,7 @@
                 formHTML = emailField(currentEmail) + passwordField() + submitButton('SIGN IN');
             } else if (mode === 'signup') {
                 tabSignup.classList.add('text-yellow-500', 'border-b-2', 'border-yellow-500');
-                tabSignup.classList.add('text-gray-500', 'hover:text-gray-300');
+                tabSignin.classList.add('text-gray-500', 'hover:text-gray-300');
                 formHTML = emailField(currentEmail) + passwordField('Password', 'auth-password', 'new-password') + passwordField('Confirm Password', 'auth-confirm-password', 'new-password') + signupTermsCheckbox + submitButton('CREATE ACCOUNT');
             } else if (mode === 'confirm') {
                 authTabs.classList.add('hidden');
@@ -1172,7 +1172,6 @@
                 
                 if (activePremium) {
                     currentUser.tier = 'Pro';
-                    // Save active product identifier (Monthly vs Annual product code)
                     currentUser.activeProduct = activePremium.productIdentifier;
                     const badge = document.getElementById('pro-badge');
                     if(badge) badge.classList.remove('hidden');
@@ -1212,12 +1211,10 @@
                 const tier = currentUser.tier || 'Free';
                 const activeProd = currentUser.activeProduct || '';
 
-                // Reset Free Button State
                 freeBtn.disabled = false;
                 freeBtn.innerText = "Switch to Free";
                 freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest";
 
-                // Reset Paid Buttons State
                 proMoBtn.disabled = false;
                 proMoBtn.innerHTML = "Monthly<br>$4.99";
                 proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center";
@@ -1231,7 +1228,6 @@
                     freeBtn.innerText = "Current Plan";
                     freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-800 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest";
                 } else if (tier === 'Pro') {
-                    // Match with the product catalog IDs from your dashboard string setup
                     if (activeProd.includes('mo') || activeProd.includes('Monthly') || activeProd === 'prod_UtaRl0alrq8tYQ' || activeProd === 'prodf0eaca2a90') {
                         proMoBtn.disabled = true;
                         proMoBtn.innerHTML = "Current Plan";
@@ -1258,34 +1254,29 @@
                 
                 const offerings = await rc.getOfferings();
                 
-                if (offerings.current && offerings.current.availablePackages.length > 0) {
-                    let packageToBuy;
-                    
-                    if (packageType === 'MONTHLY') {
-                        packageToBuy = offerings.current.availablePackages.find(p => 
-                            p.packageType === 'MONTHLY' || 
-                            p.packageType === '$rc_monthly' || 
-                            p.identifier?.toLowerCase().includes('mo') || 
-                            p.product?.identifier === 'prod_UtaRl0alrq8tYQ' ||
-                            p.product?.identifier === 'prodf0eaca2a90'
-                        );
-                    } else {
-                        packageToBuy = offerings.current.availablePackages.find(p => 
-                            p.packageType === 'ANNUAL' || 
-                            p.packageType === '$rc_annual' || 
-                            p.identifier?.toLowerCase().includes('yr') || 
-                            p.identifier?.toLowerCase().includes('annual') ||
-                            p.product?.identifier === 'prod_UljkI4GZrkgrAp' ||
-                            p.product?.identifier === 'prod97e2e8dded'
-                        );
-                    }
-                    
-                    if (!packageToBuy) packageToBuy = offerings.current.availablePackages[0];
-
-                    await rc.purchase({ rcPackage: packageToBuy });
-                } else {
-                    throw new Error("No products available for purchase.");
+                if (!offerings.current || offerings.current.availablePackages.length === 0) {
+                    throw new Error("No products available for purchase in your RevenueCat Offering.");
                 }
+
+                const packages = offerings.current.availablePackages;
+                
+                if (packages.length === 1) {
+                    throw new Error("RevenueCat is only sending 1 package. Ensure BOTH are in the Current Offering.");
+                }
+
+                let packageToBuy;
+                
+                if (packageType === 'MONTHLY') {
+                    packageToBuy = packages.find(p => p.identifier === '$rc_monthly' || p.packageType === 'MONTHLY') || 
+                                   packages.reduce((prev, curr) => (prev.product.price < curr.product.price) ? prev : curr);
+                } else {
+                    packageToBuy = packages.find(p => p.identifier === '$rc_annual' || p.packageType === 'ANNUAL') || 
+                                   packages.reduce((prev, curr) => (prev.product.price > curr.product.price) ? prev : curr);
+                }
+
+                if (!packageToBuy) throw new Error("Could not parse the packages from RevenueCat.");
+
+                await rc.purchase({ rcPackage: packageToBuy });
                 
                 await updateTierFromRevenueCat();
                 if (currentUser.tier === 'Pro') {
