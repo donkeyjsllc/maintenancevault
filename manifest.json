@@ -1,7 +1,8 @@
 {
   "name": "MaintenanceVault",
-  "short_name": "MaintenanceVault",
-  "start_url": "./index.html",
+  "short_name": "MaintVault",
+  "description": "Secure maintenance tracking and circular economy impact scores.",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#1f2937",
