@@ -1,13 +1,12 @@
-const CACHE_NAME = 'maintenancevault-v2';
+const CACHE_NAME = 'vault-cache-v1';
 const urlsToCache = [
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icon-192.png'
 ];
 
+// Install the service worker and cache core files
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -15,27 +14,31 @@ self.addEventListener('install', event => {
   );
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+// Clean up old caches when updating
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
   );
 });
 
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  if (event.action === 'view' || !event.action) {
-    event.waitUntil(
-      clients.matchAll({ type: 'window' }).then(clientList => {
-        for (const client of clientList) {
-          if (client.url.includes('index.html') && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          return clients.openWindow('./index.html');
-        }
-      })
-    );
+// Network-first, fallback to cache strategy
+self.addEventListener('fetch', event => {
+  // Skip cross-origin requests (like AWS Cognito and RevenueCat)
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
   }
+  
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
+    })
+  );
 });
