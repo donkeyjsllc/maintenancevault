@@ -1168,7 +1168,11 @@
                 if (!rc) return;
 
                 const customerInfo = await rc.getCustomerInfo();
-                const activePremium = customerInfo.entitlements.active['Premium'];
+                
+                // Match with either dashboard ID string setup
+                const activePremium = customerInfo.entitlements.active['Premium'] || 
+                                      customerInfo.entitlements.active['MaintenanceVault Pro'] || 
+                                      customerInfo.entitlements.active['ent1fca47f2ebc'];
                 
                 if (activePremium) {
                     currentUser.tier = 'Pro';
