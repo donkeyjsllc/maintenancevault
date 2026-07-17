@@ -328,7 +328,7 @@
                 <button onclick="toggleTosModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-lg"></i></button>
             </div>
             <div class="p-6 overflow-y-auto text-xs text-gray-400 space-y-4 font-sans leading-relaxed">
-                <p><strong>Sections 1–8:</strong> Standard usage, licensing, service boundaries, and data processing policies apply under Donkey Jaw Services LLC execution parameters.</p>
+                <p class="mb-4 text-[13px] text-gray-300">By using MaintenanceVault, you explicitly agree to the full <a href="https://donkeyjawservices.com/terms" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Terms of Service and Privacy Policy</a> provided by Donkey Jaw Services LLC, in addition to the specific safety disclaimers below.</p>
                 <div class="bg-red-950/20 border border-red-900/40 p-4 rounded-xl text-red-200">
                     <p class="font-bold uppercase tracking-wider text-xs mb-2 text-red-400">9. Not a Safety or Compliance Tool</p>
                     <p>MaintenanceVault is a record-keeping and tracking tool only. It does not perform, certify, or guarantee the safety, airworthiness, roadworthiness, or compliance of any vehicle, equipment, or property tracked within the application. MaintenanceVault does not determine whether an item should be repaired or replaced. Decisions regarding repair, replacement, retirement, or continued use of any tracked item are solely the responsibility of the user. Users must independently consult and follow the applicable manufacturer specifications, OEM guidelines, and any federal, state, local, or industry-specific safety regulations governing the item in question, including but not limited to items where repair is not a permitted or safe alternative to replacement (e.g., safety harnesses after fall arrest, tires below legal tread depth, or components beyond manufacturer-certified tolerances). Donkey Jaw Services LLC assumes no liability for injury, death, property damage, or loss resulting from a user's decision to repair, replace, defer maintenance on, or continue using any item tracked through MaintenanceVault.</p>
@@ -547,54 +547,19 @@
             });
         }
 
-        async function submitFeedback() {
+        function submitFeedback() {
             const feedbackField = document.getElementById('feedbackText');
             const feedback = feedbackField.value.trim();
             if (!feedback) return alert("Feedback box cannot be blank.");
 
-            const btn = document.getElementById('feedback-btn');
-            btn.disabled = true;
-            btn.innerText = "SENDING...";
+            const userEmail = currentUser ? currentUser.getUsername() : 'Unauthenticated User';
+            const subject = encodeURIComponent("MaintenanceVault App Feedback");
+            const body = encodeURIComponent(`User: ${userEmail}\n\nFeedback:\n${feedback}`);
+            
+            window.location.href = `mailto:support@maintenancevault.com?subject=${subject}&body=${body}`;
 
-            if (currentUser) {
-                currentUser.getSession(async (err, session) => {
-                    if (err) { alert("Session expired."); btn.disabled = false; btn.innerText = "SUBMIT FEEDBACK"; return; }
-                    try {
-                        const token = session.getIdToken().getJwtToken();
-                        const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
-                        
-                        const feedbackPayload = [{
-                            itemId: `feedback-${crypto.randomUUID()}`,
-                            category: "FeedbackSystemLog",
-                            notes: feedback,
-                            updatedAt: new Date().toISOString()
-                        }];
-
-                        const response = await fetch(apiEndpoint, {
-                            method: 'POST',
-                            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-                            body: JSON.stringify(feedbackPayload)
-                        });
-
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(`AWS STATUS ${response.status}: ${errorText}`);
-                        }
-
-                        alert("Thank you! Your feedback has been logged securely to our database.");
-                        feedbackField.value = '';
-                    } catch (e) {
-                        alert("SYSTEM ERROR DETECTED:\n\n" + e.message);
-                    } finally {
-                        btn.disabled = false;
-                        btn.innerText = "SUBMIT FEEDBACK";
-                    }
-                });
-            } else {
-                alert("Please authenticate to submit system feedback logs.");
-                btn.disabled = false;
-                btn.innerText = "SUBMIT FEEDBACK";
-            }
+            feedbackField.value = '';
+            toggleSettingsModal();
         }
 
         async function handleAccountDeletion() {
