@@ -611,7 +611,7 @@
             const list = document.getElementById('vault-list');
             list.innerHTML = '';
             const filtered = vaultData.filter(item => {
-                if (item.category === 'FeedbackSystemLog') return false; 
+                if (item.category === 'FeedbackSystemLog' || item.isDeleted) return false; 
                 if(currentTab === 'dashboard') return true;
                 if(currentTab === 'vehicle') return item.category === 'Vehicle';
                 if(currentTab === 'property') return item.category === 'Property';
@@ -684,7 +684,11 @@
 
         function confirmDeleteItem() {
             if (itemToDelete) {
-                vaultData = vaultData.filter(item => item.itemId !== itemToDelete);
+                const index = vaultData.findIndex(item => item.itemId === itemToDelete);
+                if (index > -1) {
+                    vaultData[index].isDeleted = true;
+                    vaultData[index].updatedAt = new Date().toISOString();
+                }
                 localStorage.setItem('sustainVault', JSON.stringify(vaultData));
                 renderVault();
                 updateStats();
@@ -694,7 +698,7 @@
         }
 
         function updateStats() {
-            const validItems = vaultData.filter(i => i.category !== 'FeedbackSystemLog');
+            const validItems = vaultData.filter(i => i.category !== 'FeedbackSystemLog' && !i.isDeleted);
             const repaired = validItems.filter(i => i.type === 'repair').length;
             const replaced = validItems.filter(i => i.type === 'replace').length;
             const total = repaired + replaced;
@@ -722,15 +726,16 @@
             if (Notification.permission !== "granted") return;
             const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
             vaultData.forEach(item => {
-                if (item.category !== 'FeedbackSystemLog' && new Date(item.date) < sixMonthsAgo) sendLocalNotification(item);
+                if (item.category !== 'FeedbackSystemLog' && !item.isDeleted && new Date(item.date) < sixMonthsAgo) sendLocalNotification(item);
             });
         }
 
         function sendLocalNotification(item) {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(reg => {
+                    const partText = item.part ? ` (${item.part})` : '';
                     reg.showNotification('Maintenance Due', {
-                        body: `Your ${item.name} (${item.part}) is due for service.`,
+                        body: `Your ${item.name}${partText} is due for service.`,
                         icon: 'icon-192.png',
                         tag: `maint-${item.itemId}`,
                         actions: [{ action: 'view', title: 'View Details' }]
@@ -799,7 +804,7 @@
             const csvRows = [headers.join(',')];
 
             vaultData.forEach(item => {
-                if (item.category === 'FeedbackSystemLog') return;
+                if (item.category === 'FeedbackSystemLog' || item.isDeleted) return;
                 const values = headers.map(header => {
                     const val = item[header] || '';
                     const escaped = ('' + val).replace(/"/g, '""');
