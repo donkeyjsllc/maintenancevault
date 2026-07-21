@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "MaintenanceVault",
   "short_name": "MaintVault",
   "description": "Secure maintenance tracking and circular economy impact scores.",
@@ -7,16 +8,33 @@
   "background_color": "#111827",
   "theme_color": "#1f2937",
   "orientation": "portrait",
+  "categories": ["utilities", "productivity", "business"],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshot-narrow.jpg",
+      "sizes": "720x1280",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
     }
   ]
 }
