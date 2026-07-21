@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.maintenancevaultapp.twa",
+        "sha256_cert_fingerprints": ["9D:13:2A:B7:92:1B:10:F9:89:0B:E0:BC:8D:4A:93:03:30:CE:58:65:7E:62:16:7F:F2:FC:EE:D0:7E:E1:E6:CC"]
+      }
+    }]
