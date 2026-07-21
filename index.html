@@ -1218,7 +1218,46 @@
             }
         }
 
-        async function handleUpgrade(packageType) {
+      async function handleUpgrade(packageType) {
+            // 1. Check if we are inside the Android TWA via Digital Goods API
+            if ('getDigitalGoodsService' in window) {
+                try {
+                    const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+                    if (service) {
+                        // We are in Android! Trigger Google Play Billing
+                        // Note: The SKU names here MUST match exactly what you create in the Google Play Console
+                        const sku = packageType === 'MONTHLY' ? 'pro_monthly_499' : 'pro_yearly_4999';
+                        
+                        const paymentMethods = [{
+                            supportedMethods: "https://play.google.com/billing",
+                            data: { sku: sku }
+                        }];
+                        
+                        const request = new PaymentRequest(paymentMethods);
+                        const response = await request.show();
+                        
+                        // Tell Google the payment was successful
+                        await response.complete('success');
+                        
+                        // Tell RevenueCat about the Google Play purchase to unlock the Pro tier
+                        const rc = window.rcInstance;
+                        await rc.syncPurchases(); 
+                        await updateTierFromRevenueCat();
+                        
+                        if (currentUser.tier === 'Pro') {
+                            alert("Welcome to Pro! Your sync features are now active.");
+                            togglePaywall();
+                        }
+                        return; // Exit the function so Stripe doesn't fire
+                    }
+                } catch (error) {
+                    console.error("Google Play Billing Error:", error);
+                    alert("Google Play purchase failed or was canceled.");
+                    return;
+                }
+            }
+
+            // 2. Fallback to Stripe via RevenueCat (For Apple / Web users)
             try {
                 let rc = window.rcInstance;
                 if (!rc && typeof Purchases !== 'undefined' && currentUser) {
@@ -1230,36 +1269,21 @@
                 if (!rc) throw new Error("Billing not initialized. Please refresh the page and try again.");
                 
                 const offerings = await rc.getOfferings();
-                
                 let activeOffering = offerings.current;
+                
                 if (!activeOffering || !activeOffering.availablePackages || activeOffering.availablePackages.length === 0) {
-                    if (offerings.all && offerings.all['default']) {
-                        activeOffering = offerings.all['default'];
-                    } else if (offerings.all && Object.values(offerings.all).length > 0) {
-                        activeOffering = Object.values(offerings.all)[0];
-                    }
+                    if (offerings.all && offerings.all['default']) activeOffering = offerings.all['default'];
+                    else if (offerings.all && Object.values(offerings.all).length > 0) activeOffering = Object.values(offerings.all)[0];
                 }
 
                 if (!activeOffering || !activeOffering.availablePackages || activeOffering.availablePackages.length === 0) {
-                    throw new Error("RevenueCat is not sending any products. Make sure your 'default' offering is marked as 'Current' in the dashboard!");
+                    throw new Error("RevenueCat is not sending any products.");
                 }
 
                 const packages = activeOffering.availablePackages;
-
-                let packageToBuy;
-                if (packageType === 'MONTHLY') {
-                    packageToBuy = packages.find(p => 
-                        p.identifier === '$rc_monthly' || 
-                        p.packageType === 'MONTHLY' || 
-                        p.packageType === '$rc_monthly'
-                    );
-                } else {
-                    packageToBuy = packages.find(p => 
-                        p.identifier === '$rc_annual' || 
-                        p.packageType === 'ANNUAL' || 
-                        p.packageType === '$rc_annual'
-                    );
-                }
+                let packageToBuy = packageType === 'MONTHLY' ? 
+                    packages.find(p => p.identifier === '$rc_monthly' || p.packageType === 'MONTHLY') : 
+                    packages.find(p => p.identifier === '$rc_annual' || p.packageType === 'ANNUAL');
 
                 if (!packageToBuy) packageToBuy = packages[0];
 
@@ -1271,7 +1295,7 @@
                     togglePaywall();
                 }
             } catch (error) {
-                console.error("Upgrade Error:", error);
+                console.error("Stripe Upgrade Error:", error);
                 alert("Purchase failed: " + error.message);
             }
         }
