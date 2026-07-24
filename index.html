@@ -395,7 +395,13 @@
         };
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
-        const REVENUECAT_PUBLIC_API_KEY = 'goog_MadNpQoboAIdqIQbRVAiPBNmovB';
+        const REVENUECAT_ANDROID_KEY = 'goog_MadNpQoboAIdqIQbRVAiPBNmovB';
+const REVENUECAT_WEB_KEY = 'rcb_HZKPkgLDQNnGHpKnVRBvKQLKMtWM';
+
+// Dynamically select the correct API key based on the platform
+const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window) 
+    ? REVENUECAT_ANDROID_KEY 
+    : REVENUECAT_WEB_KEY;
 
         let vaultData = JSON.parse(localStorage.getItem('sustainVault')) || [];
         let currentTab = 'vehicle';
