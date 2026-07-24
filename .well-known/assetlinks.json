@@ -3,6 +3,9 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.maintenancevaultapp.twa",
-    "sha256_cert_fingerprints": ["83:8E:68:D8:A5:AA:88:43:B0:B9:48:D2:25:A4:B9:62:66:5A:44:86:2D:96:BE:9A:B1:38:E8:6B:E5:81:7F:D5"]
+    "sha256_cert_fingerprints": [
+      "83:8E:68:D8:A5:AA:88:43:B0:B9:48:D2:25:A4:B9:62:66:5A:44:86:2D:96:BE:9A:B1:38:E8:6B:E5:81:7F:D5",
+      "9D:13:2A:B7:92:1B:10:F9:89:0B:E0:BC:8D:4A:93:03:30:CE:58:65:7E:62:16:7F:F2:FC:EE:D0:7E:E1:E6:CC"
+    ]
   }
 }]
