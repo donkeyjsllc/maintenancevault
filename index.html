@@ -1039,10 +1039,18 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
         }
 
         function handleSignOut() {
+            // Safety catch for Free Tier users before wiping local storage
+            const tier = currentUser && currentUser.tier ? currentUser.tier : 'Free';
+            if (tier === 'Free') {
+                const confirmOut = confirm("WARNING: You are on the Free plan. Logging out will permanently clear your offline device data for security. Please export a CSV backup first. Are you sure you want to log out?");
+                if (!confirmOut) return; // Cancels the logout if they click 'Cancel'
+            }
+
             if (currentUser) {
                 currentUser.signOut();
                 currentUser = null;
             }
+            
             localStorage.removeItem('sustainVault');
             vaultData = [];
             handleAuthFailure(new Error("Signed out securely"));
@@ -1307,6 +1315,16 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
         }
 
         async function initializeApp() {
+            // Request permanent storage vault to stop Android OS background cache sweeps
+            if (navigator.storage && navigator.storage.persist) {
+                try {
+                    const isPersisted = await navigator.storage.persist();
+                    console.log(`Persistent storage granted: ${isPersisted}`);
+                } catch (e) {
+                    console.error("Persistent storage request failed", e);
+                }
+            }
+
             await checkAuthState();
             
             const isEnabled = localStorage.getItem('notificationsEnabled') === 'true';
@@ -1328,4 +1346,4 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
         initializeApp();
     </script>
 </body>
-</html> 
+</html>
