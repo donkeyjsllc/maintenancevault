@@ -11,7 +11,6 @@
   
     <script>window.global = window;</script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
-    
     <script src="https://unpkg.com/@revenuecat/purchases-js@1.29.0/dist/Purchases.umd.js"></script>
 
     <style>
@@ -21,6 +20,15 @@
         .tab-active { border-bottom: 2px solid #3b82f6; color: #60a5fa; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        .social-btn { 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            width: 100%; padding: 12px; background-color: #ffffff; color: #1f2937; 
+            border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 15px; 
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; 
+            transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .social-btn:hover { background-color: #f3f4f6; transform: scale(0.98); }
     </style>
 </head>
 
@@ -141,6 +149,16 @@
                 <button type="submit" id="save-entry-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Entry</button>
             </form>
 
+            <div id="filter-sort-bar" class="hidden flex justify-between items-center mb-4 px-1">
+                <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Logs</span>
+                <select id="sortOrder" onchange="renderVault()" class="bg-gray-800 border border-gray-700 rounded py-1 px-2 text-xs text-white outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="costHigh">Cost: High to Low</option>
+                    <option value="costLow">Cost: Low to High</option>
+                </select>
+            </div>
+
             <div id="vault-list" class="grid gap-4"></div>
 
             <div id="dashboard-view" class="hidden animate-fade-in mt-6">
@@ -189,6 +207,11 @@
                     <form id="auth-form" onsubmit="handleAuthSubmit(event); return false;" class="space-y-4">
                     </form>
                     <div id="auth-status-msg" class="mt-4 p-3 rounded text-xs text-center hidden"></div>
+                    
+                    <button id="google-login-btn" class="social-btn">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" width="16">
+                        Continue with Google
+                    </button>
                 </div>
 
                 <div class="p-4 bg-gray-900/50 text-center">
@@ -396,12 +419,10 @@
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
         const REVENUECAT_ANDROID_KEY = 'goog_MadNpQoboAIdqIQbRVAiPBNmovB';
-const REVENUECAT_WEB_KEY = 'rcb_HZKPkgLDQNnGHpKnVRBvKQLKMtWM';
-
-// Dynamically select the correct API key based on the platform
-const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window) 
-    ? REVENUECAT_ANDROID_KEY 
-    : REVENUECAT_WEB_KEY;
+        const REVENUECAT_WEB_KEY = 'rcb_HZKPkgLDQNnGHpKnVRBvKQLKMtWM';
+        const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window) 
+            ? REVENUECAT_ANDROID_KEY 
+            : REVENUECAT_WEB_KEY;
 
         let vaultData = JSON.parse(localStorage.getItem('sustainVault')) || [];
         let currentTab = 'vehicle';
@@ -488,6 +509,31 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
             }
 
             document.getElementById('save-entry-btn').innerText = 'Update Entry';
+            
+            const form = document.getElementById('input-form');
+            if(form.classList.contains('hidden')) toggleForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function duplicateItem(itemId) {
+            const item = vaultData.find(i => i.itemId === itemId);
+            if(!item) return;
+
+            document.getElementById('itemAssetName').value = item.assetName || '';
+            document.getElementById('itemName').value = item.name + ' (Copy)';
+            document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('itemCost').value = item.cost || '';
+            document.getElementById('itemCategory').value = item.category || 'Vehicle';
+            document.getElementById('itemPart').value = item.part || '';
+            document.getElementById('itemNotes').value = item.notes || '';
+            
+            const typeRadios = document.getElementsByName('actionType');
+            for(let r of typeRadios) {
+                if(r.value === item.type) r.checked = true;
+            }
+
+            editItemId = null; // Important: ensure it saves as a NEW item
+            document.getElementById('save-entry-btn').innerText = 'Save Entry';
             
             const form = document.getElementById('input-form');
             if(form.classList.contains('hidden')) toggleForm();
@@ -625,6 +671,12 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
                 return false;
             });
 
+            const sortOrder = document.getElementById('sortOrder') ? document.getElementById('sortOrder').value : 'newest';
+            if (sortOrder === 'newest') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sortOrder === 'oldest') filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (sortOrder === 'costHigh') filtered.sort((a, b) => (b.cost || 0) - (a.cost || 0));
+            if (sortOrder === 'costLow') filtered.sort((a, b) => (a.cost || 0) - (b.cost || 0));
+
             if(filtered.length === 0) {
                 list.innerHTML = `<div class="text-center text-gray-600 mt-10 italic flex flex-col items-center"><i class="fas fa-clipboard-list text-4xl mb-4 opacity-20"></i>No logs found.</div>`;
                 return;
@@ -649,11 +701,13 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
 
                 list.innerHTML += `
                     <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-sm relative group hover:border-blue-500 transition-colors">
-                        <button onclick="editItem('${item.itemId}')" class="absolute top-3 right-10 text-gray-500 hover:text-blue-400 p-2"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteItem('${item.itemId}')" class="absolute top-3 right-2 text-gray-600 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
+                        <button onclick="duplicateItem('${item.itemId}')" class="absolute top-3 right-16 text-gray-500 hover:text-green-400 p-2" title="Duplicate Log"><i class="fas fa-copy"></i></button>
+                        <button onclick="editItem('${item.itemId}')" class="absolute top-3 right-9 text-gray-500 hover:text-blue-400 p-2" title="Edit Log"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteItem('${item.itemId}')" class="absolute top-3 right-2 text-gray-600 hover:text-red-500 p-2" title="Delete Log"><i class="fas fa-trash"></i></button>
+                        
                         <div class="flex items-start gap-4">
                             <div class="mt-1 text-2xl text-gray-500 bg-gray-900 p-3 rounded-full h-12 w-12 flex items-center justify-center border border-gray-700"><i class="fas ${icon}"></i></div>
-                            <div class="flex-1 pr-16">
+                            <div class="flex-1 pr-24">
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h3 class="font-bold text-white text-lg leading-tight">${item.name}</h3>
@@ -758,17 +812,18 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
             });
             document.getElementById(`tab-${tab}`).classList.add('tab-active', 'text-blue-400');
 
-            // Force hide the form whenever a tab is switched to keep the UI clean
             document.getElementById('input-form').classList.add('hidden');
 
             if (tab === 'dashboard') {
                 document.getElementById('vault-list').classList.remove('hidden');
                 document.getElementById('dashboard-view').classList.remove('hidden');
                 document.getElementById('add-item-btn').classList.add('hidden');
+                document.getElementById('filter-sort-bar').classList.add('hidden');
             } else {
                 document.getElementById('vault-list').classList.remove('hidden');
                 document.getElementById('dashboard-view').classList.add('hidden');
                 document.getElementById('add-item-btn').classList.remove('hidden');
+                document.getElementById('filter-sort-bar').classList.remove('hidden');
             }
 
             renderVault();
@@ -1039,11 +1094,10 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
         }
 
         function handleSignOut() {
-            // Safety catch for Free Tier users before wiping local storage
             const tier = currentUser && currentUser.tier ? currentUser.tier : 'Free';
             if (tier === 'Free') {
                 const confirmOut = confirm("WARNING: You are on the Free plan. Logging out will permanently clear your offline device data for security. Please export a CSV backup first. Are you sure you want to log out?");
-                if (!confirmOut) return; // Cancels the logout if they click 'Cancel'
+                if (!confirmOut) return; 
             }
 
             if (currentUser) {
@@ -1075,6 +1129,7 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
                             const el = document.getElementById(id);
                             if (el) el.classList.remove('hidden');
                         });
+                        document.getElementById('filter-sort-bar').classList.remove('hidden');
 
                         const hideElements = ['auth-section', 'login-btn'];
                         hideElements.forEach(id => {
@@ -1126,7 +1181,7 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
 
         function handleAuthFailure(e) {
             currentUser = null;
-            const hideElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone', 'header-stats'];
+            const hideElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone', 'header-stats', 'filter-sort-bar'];
             hideElements.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
@@ -1156,7 +1211,6 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
 
                 const customerInfo = await rc.getCustomerInfo();
                 
-                // Match with either dashboard ID string setup
                 const activePremium = customerInfo.entitlements.active['Premium'] || 
                                       customerInfo.entitlements.active['MaintenanceVault Pro'] || 
                                       customerInfo.entitlements.active['ent1fca47f2ebc'];
@@ -1233,13 +1287,10 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
         }
 
       async function handleUpgrade(packageType) {
-            // 1. Check if we are inside the Android TWA via Digital Goods API
             if ('getDigitalGoodsService' in window) {
                 try {
                     const service = await window.getDigitalGoodsService('https://play.google.com/billing');
                     if (service) {
-                        // We are in Android! Trigger Google Play Billing
-                        // Note: The SKU names here MUST match exactly what you create in the Google Play Console
                         const sku = packageType === 'MONTHLY' ? 'pro_monthly_499' : 'pro_yearly_4999';
                         
                         const paymentMethods = [{
@@ -1250,10 +1301,8 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
                         const request = new PaymentRequest(paymentMethods);
                         const response = await request.show();
                         
-                        // Tell Google the payment was successful
                         await response.complete('success');
                         
-                        // Tell RevenueCat about the Google Play purchase to unlock the Pro tier
                         const rc = window.rcInstance;
                         await rc.syncPurchases(); 
                         await updateTierFromRevenueCat();
@@ -1262,7 +1311,7 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
                             alert("Welcome to Pro! Your sync features are now active.");
                             togglePaywall();
                         }
-                        return; // Exit the function so Stripe doesn't fire
+                        return; 
                     }
                 } catch (error) {
                     console.error("Google Play Billing Error:", error);
@@ -1271,7 +1320,6 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
                 }
             }
 
-            // 2. Fallback to Stripe via RevenueCat (For Apple / Web users)
             try {
                 let rc = window.rcInstance;
                 if (!rc && typeof Purchases !== 'undefined' && currentUser) {
@@ -1315,7 +1363,6 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
         }
 
         async function initializeApp() {
-            // Request permanent storage vault to stop Android OS background cache sweeps
             if (navigator.storage && navigator.storage.persist) {
                 try {
                     const isPersisted = await navigator.storage.persist();
@@ -1341,6 +1388,17 @@ const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window)
             });
 
             document.getElementById('input-form').addEventListener('submit', addItem);
+            
+            document.getElementById('google-login-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const cognitoDomain = "https://1c9wukuwbt.auth.us-east-1.amazoncognito.com";
+                
+                // Replace this with the exact web address where your app is hosted
+                const redirectUri = "https://donkeyjawservices.com"; 
+
+                const loginUrl = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&response_type=TOKEN&client_id=${poolData.ClientId}&redirect_uri=${redirectUri}`;
+                window.location.href = loginUrl;
+            });
         }
 
         initializeApp();
