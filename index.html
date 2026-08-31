@@ -464,8 +464,6 @@
                 const userData = { Username: username, Pool: userPool };
                 const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
                 cognitoUser.setSignInUserSession(session);
-                
-                cognitoUser.cacheTokens(); 
 
                 currentUser = cognitoUser;
 
