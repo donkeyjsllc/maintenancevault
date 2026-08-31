@@ -431,6 +431,12 @@
         let itemToDelete = null;
         let editItemId = null;
 
+        function base64UrlDecode(str) {
+            let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (base64.length % 4) base64 += '=';
+            return atob(base64);
+        }
+
         function handleHostedUICallback() {
             if (!window.location.hash || !window.location.hash.includes('id_token=')) return false;
 
@@ -443,7 +449,7 @@
             window.history.replaceState(null, null, window.location.pathname);
 
             try {
-                const payload = JSON.parse(atob(idTokenString.split('.')[1]));
+                const payload = JSON.parse(base64UrlDecode(idTokenString.split('.')[1]));
                 const username = payload['cognito:username'] || payload['sub'];
                 const email = payload['email']; 
 
