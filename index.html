@@ -431,6 +431,73 @@
         let itemToDelete = null;
         let editItemId = null;
 
+        function handleHostedUICallback() {
+            if (!window.location.hash || !window.location.hash.includes('id_token=')) return false;
+
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const idTokenString = hashParams.get('id_token');
+            const accessTokenString = hashParams.get('access_token');
+
+            if (!idTokenString || !accessTokenString) return false;
+
+            window.history.replaceState(null, null, window.location.pathname);
+
+            try {
+                const payload = JSON.parse(atob(idTokenString.split('.')[1]));
+                const username = payload['cognito:username'] || payload['sub'];
+                const email = payload['email']; 
+
+                const idToken = new AmazonCognitoIdentity.CognitoIdToken({ IdToken: idTokenString });
+                const accessToken = new AmazonCognitoIdentity.CognitoAccessToken({ AccessToken: accessTokenString });
+                
+                const session = new AmazonCognitoIdentity.CognitoUserSession({
+                    IdToken: idToken,
+                    AccessToken: accessToken
+                });
+
+                const userData = { Username: username, Pool: userPool };
+                const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+                cognitoUser.setSignInUserSession(session);
+                
+                cognitoUser.cacheTokens(); 
+
+                currentUser = cognitoUser;
+
+                const showElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone', 'header-stats', 'filter-sort-bar'];
+                showElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('hidden');
+                });
+
+                const hideElements = ['auth-section', 'login-btn'];
+                hideElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+
+                const userEmailElem = document.getElementById('user-email');
+                if (userEmailElem) userEmailElem.innerText = email || username;
+
+                if (typeof Purchases !== 'undefined') {
+                    const rcClass = Purchases.Purchases || Purchases;
+                    window.rcInstance = rcClass.configure({
+                        apiKey: REVENUECAT_PUBLIC_API_KEY,
+                        appUserId: username
+                    });
+                    updateTierFromRevenueCat();
+                }
+
+                renderVault();
+                updateStats();
+                syncToAWS();
+
+                return true;
+            } catch (err) {
+                console.error("Failed to construct federated session:", err);
+                return false;
+            }
+        }
+
         function addItem(event) {
             if (event) event.preventDefault();
             const assetName = document.getElementById('itemAssetName').value;
@@ -532,7 +599,7 @@
                 if(r.value === item.type) r.checked = true;
             }
 
-            editItemId = null; // Important: ensure it saves as a NEW item
+            editItemId = null;
             document.getElementById('save-entry-btn').innerText = 'Save Entry';
             
             const form = document.getElementById('input-form');
@@ -1108,6 +1175,10 @@
             localStorage.removeItem('sustainVault');
             vaultData = [];
             handleAuthFailure(new Error("Signed out securely"));
+
+            const cognitoDomain = "https://us-east-1c9wukuwbt.auth.us-east-1.amazoncognito.com";
+            const redirectUri = "https://maintenancevaultapp.com";
+            window.location.href = `${cognitoDomain}/logout?client_id=${poolData.ClientId}&logout_uri=${redirectUri}`;
         }
 
         function checkAuthState() {
@@ -1372,7 +1443,11 @@
                 }
             }
 
-            await checkAuthState();
+            const handledCallback = handleHostedUICallback();
+            
+            if (!handledCallback) {
+                await checkAuthState();
+            }
             
             const isEnabled = localStorage.getItem('notificationsEnabled') === 'true';
             document.getElementById('notify-toggle').checked = isEnabled;
@@ -1392,8 +1467,6 @@
             document.getElementById('google-login-btn').addEventListener('click', (e) => {
                 e.preventDefault();
                 const cognitoDomain = "https://us-east-1c9wukuwbt.auth.us-east-1.amazoncognito.com";
-                
-                // Replace this with the exact web address where your app is hosted
                 const redirectUri = "https://maintenancevaultapp.com"; 
 
                 const loginUrl = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&response_type=TOKEN&client_id=${poolData.ClientId}&redirect_uri=${redirectUri}`;
