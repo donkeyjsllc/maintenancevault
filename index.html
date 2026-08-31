@@ -1391,10 +1391,10 @@
             
             document.getElementById('google-login-btn').addEventListener('click', (e) => {
                 e.preventDefault();
-                const cognitoDomain = "https://1c9wukuwbt.auth.us-east-1.amazoncognito.com";
+                const cognitoDomain = "https://us-east-1c9wukuwbt.auth.us-east-1.amazoncognito.com";
                 
                 // Replace this with the exact web address where your app is hosted
-                const redirectUri = "https://donkeyjawservices.com"; 
+                const redirectUri = "https://maintenancevaultapp.com"; 
 
                 const loginUrl = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&response_type=TOKEN&client_id=${poolData.ClientId}&redirect_uri=${redirectUri}`;
                 window.location.href = loginUrl;
