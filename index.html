@@ -456,10 +456,13 @@
                 const idToken = new AmazonCognitoIdentity.CognitoIdToken({ IdToken: idTokenString });
                 const accessToken = new AmazonCognitoIdentity.CognitoAccessToken({ AccessToken: accessTokenString });
                 
+                const refreshToken = new AmazonCognitoIdentity.CognitoRefreshToken({ RefreshToken: '' });
+
                 const session = new AmazonCognitoIdentity.CognitoUserSession({
-                    IdToken: idToken,
-                    AccessToken: accessToken
-                });
+                IdToken: idToken,
+                AccessToken: accessToken,
+                RefreshToken: refreshToken
+                 });
 
                 const userData = { Username: username, Pool: userPool };
                 const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
