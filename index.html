@@ -1369,7 +1369,7 @@
                 try {
                     const service = await window.getDigitalGoodsService('https://play.google.com/billing');
                     if (service) {
-                        const sku = packageType === 'MONTHLY' ? 'pro_monthly_499' : 'pro_yearly_4999';
+                        const sku = packageType === 'MONTHLY' ? 'mv_pro_monthly' : 'mv_pro_yearly';
                         
                         const paymentMethods = [{
                             supportedMethods: "https://play.google.com/billing",
