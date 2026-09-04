@@ -20,6 +20,15 @@
         .tab-active { border-bottom: 2px solid #3b82f6; color: #60a5fa; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        .social-btn { 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            width: 100%; padding: 12px; background-color: #ffffff; color: #1f2937; 
+            border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 15px; 
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; 
+            transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .social-btn:hover { background-color: #f3f4f6; transform: scale(0.98); }
     </style>
 </head>
 
@@ -842,14 +851,30 @@
 
         function updateStats() {
             const validItems = vaultData.filter(i => i.category !== 'FeedbackSystemLog' && !i.isDeleted);
-            const repaired = validItems.filter(i => i.type === 'repair').length;
-            const replaced = validItems.filter(i => i.type === 'replace').length;
-            const total = repaired + replaced;
-            const co2Saved = repaired * 10; 
-            document.getElementById('co2-stat').innerText = `${co2Saved} kg`;
-            document.getElementById('dash-repaired').innerText = repaired;
-            document.getElementById('dash-replaced').innerText = replaced;
-            const score = total === 0 ? 0 : Math.round((repaired / total) * 100);
+            
+            let repairedCount = 0;
+            let replacedCount = 0;
+            let repairCost = 0;
+            let replaceCost = 0;
+
+            validItems.forEach(item => {
+                const cost = Number(item.cost) || 0;
+                if (item.type === 'repair') {
+                    repairedCount++;
+                    repairCost += cost;
+                } else if (item.type === 'replace') {
+                    replacedCount++;
+                    replaceCost += cost;
+                }
+            });
+
+            const totalCost = repairCost + replaceCost;
+            const score = totalCost === 0 ? 0 : Math.round((repairCost / totalCost) * 100);
+
+            document.getElementById('co2-stat').innerText = `${repairedCount * 10} kg`;
+            document.getElementById('dash-repaired').innerText = repairedCount;
+            document.getElementById('dash-replaced').innerText = replacedCount;
+            
             document.getElementById('impact-bar').style.width = `${score}%`;
             document.getElementById('impact-percent').innerText = `${score}% Sustainability Score`;
         }
