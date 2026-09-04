@@ -280,39 +280,35 @@
                     <button id="paywall-procom-btn" onclick="joinProComWaitlist()" class="w-full py-3 px-4 rounded-xl font-bold transition-all border-2 border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-white uppercase text-[10px] tracking-widest text-center">Join the Waitlist</button>
                 </div>
             </div>
-<div id="profile-modal" class="hidden fixed inset-0 z-[75] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-gray-900 w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
-        <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950">
-            <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-user-edit text-blue-500 mr-2"></i>Edit Profile</h3>
-            <button onclick="toggleProfileModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-lg"></i></button>
-        </div>
-        <form id="profile-form" onsubmit="saveProfileData(event)" class="p-6 space-y-4">
-            <div>
-                <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Full Name</label>
-                <input type="text" id="prof-name" placeholder="John Doe" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
-            </div>
-            <div>
-                <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Nickname / Company</label>
-                <input type="text" id="prof-nickname" placeholder="e.g. Donkey Jaw Services" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
-            </div>
-            <div>
-                <div class="space-y-2 border-b border-gray-800 pb-4 mb-4">
-    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Account</h4>
-    <button onclick="openProfileModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-lg border border-gray-700 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
-        <i class="fas fa-user"></i> <span>EDIT PROFILE</span>
-    </button>
-</div>
-                <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Avatar Image URL</label>
-                <input type="url" id="prof-picture" placeholder="https://..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
-            </div>
-            <button type="submit" id="save-profile-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Profile</button>
-            <div id="profile-status" class="hidden mt-2 text-xs text-center font-bold"></div>
-        </form>
-    </div>
-</div>
+
             <div class="p-4 bg-gray-900/50 text-center border-t border-gray-700">
                 <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Secure Checkout via RevenueCat & Stripe</p>
             </div>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="hidden fixed inset-0 z-[75] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-gray-900 w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
+            <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950">
+                <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-user-edit text-blue-500 mr-2"></i>Edit Profile</h3>
+                <button onclick="toggleProfileModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <form id="profile-form" onsubmit="saveProfileData(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Full Name</label>
+                    <input type="text" id="prof-name" placeholder="John Doe" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Nickname / Company</label>
+                    <input type="text" id="prof-nickname" placeholder="e.g. Donkey Jaw Services" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Avatar Image URL</label>
+                    <input type="url" id="prof-picture" placeholder="https://..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+                <button type="submit" id="save-profile-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Profile</button>
+                <div id="profile-status" class="hidden mt-2 text-xs text-center font-bold"></div>
+            </form>
         </div>
     </div>
 
@@ -326,6 +322,14 @@
             </div>
 
             <div class="p-6 space-y-6 overflow-y-auto flex-1">
+                
+                <div class="space-y-2 border-b border-gray-800 pb-4 mb-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Account</h4>
+                    <button onclick="openProfileModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-lg border border-gray-700 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-user"></i> <span>EDIT PROFILE</span>
+                    </button>
+                </div>
+
                 <div class="space-y-2">
                     <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Subscription</h4>
                     <button onclick="toggleSettingsModal(); togglePaywall()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
@@ -832,31 +836,11 @@
             });
         }
 
-        function deleteItem(itemId) {
-            itemToDelete = itemId;
-            toggleDeleteItemModal();
-        }
-
         function toggleDeleteItemModal() {
             const modal = document.getElementById('delete-item-modal');
             modal.classList.toggle('hidden');
             if (modal.classList.contains('hidden')) {
                 itemToDelete = null;
-            }
-        }
-
-        function confirmDeleteItem() {
-            if (itemToDelete) {
-                const index = vaultData.findIndex(item => item.itemId === itemToDelete);
-                if (index > -1) {
-                    vaultData[index].isDeleted = true;
-                    vaultData[index].updatedAt = new Date().toISOString();
-                }
-                localStorage.setItem('sustainVault', JSON.stringify(vaultData));
-                renderVault();
-                updateStats();
-                syncToAWS();
-                toggleDeleteItemModal();
             }
         }
 
@@ -941,60 +925,60 @@
                 else if (currentTab === 'equipment') document.getElementById('itemCategory').value = 'Equipment';
             }
         }
-function toggleProfileModal() {
-    document.getElementById('profile-modal').classList.toggle('hidden');
-}
 
-function openProfileModal() {
-    if (!currentUser) return alert("Please sign in to edit your profile.");
-    
-    toggleSettingsModal(); 
-    toggleProfileModal();  
-
-    // Fetch existing AWS data to pre-fill the inputs
-    currentUser.getUserAttributes((err, attributes) => {
-        if (err) return console.error("Could not load profile:", err);
-        attributes.forEach(attr => {
-            if (attr.getName() === 'name') document.getElementById('prof-name').value = attr.getValue();
-            if (attr.getName() === 'nickname') document.getElementById('prof-nickname').value = attr.getValue();
-            if (attr.getName() === 'picture') document.getElementById('prof-picture').value = attr.getValue();
-        });
-    });
-}
-
-function saveProfileData(e) {
-    e.preventDefault();
-    const btn = document.getElementById('save-profile-btn');
-    const status = document.getElementById('profile-status');
-    
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SAVING...`;
-
-    // Package the attributes for AWS Cognito
-    const attributeList = [
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'name', Value: document.getElementById('prof-name').value }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'nickname', Value: document.getElementById('prof-nickname').value }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'picture', Value: document.getElementById('prof-picture').value })
-    ];
-
-    currentUser.updateAttributes(attributeList, (err, result) => {
-        btn.disabled = false;
-        btn.innerHTML = `Save Profile`;
-        status.classList.remove('hidden', 'text-red-400', 'text-green-400');
-        
-        if (err) {
-            status.classList.add('text-red-400');
-            status.innerText = err.message || "Failed to save profile.";
-        } else {
-            status.classList.add('text-green-400');
-            status.innerText = "Profile updated successfully!";
-            setTimeout(() => { 
-                toggleProfileModal(); 
-                status.classList.add('hidden'); 
-            }, 1500);
+        function toggleProfileModal() {
+            document.getElementById('profile-modal').classList.toggle('hidden');
         }
-    });
-}
+
+        function openProfileModal() {
+            if (!currentUser) return alert("Please sign in to edit your profile.");
+            
+            toggleSettingsModal(); 
+            toggleProfileModal();  
+
+            currentUser.getUserAttributes((err, attributes) => {
+                if (err) return console.error("Could not load profile:", err);
+                attributes.forEach(attr => {
+                    if (attr.getName() === 'name') document.getElementById('prof-name').value = attr.getValue();
+                    if (attr.getName() === 'nickname') document.getElementById('prof-nickname').value = attr.getValue();
+                    if (attr.getName() === 'picture') document.getElementById('prof-picture').value = attr.getValue();
+                });
+            });
+        }
+
+        function saveProfileData(e) {
+            e.preventDefault();
+            const btn = document.getElementById('save-profile-btn');
+            const status = document.getElementById('profile-status');
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SAVING...`;
+
+            const attributeList = [
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'name', Value: document.getElementById('prof-name').value }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'nickname', Value: document.getElementById('prof-nickname').value }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'picture', Value: document.getElementById('prof-picture').value })
+            ];
+
+            currentUser.updateAttributes(attributeList, (err, result) => {
+                btn.disabled = false;
+                btn.innerHTML = `Save Profile`;
+                status.classList.remove('hidden', 'text-red-400', 'text-green-400');
+                
+                if (err) {
+                    status.classList.add('text-red-400');
+                    status.innerText = err.message || "Failed to save profile.";
+                } else {
+                    status.classList.add('text-green-400');
+                    status.innerText = "Profile updated successfully!";
+                    setTimeout(() => { 
+                        toggleProfileModal(); 
+                        status.classList.add('hidden'); 
+                    }, 1500);
+                }
+            });
+        }
+
         function toggleSettingsModal() {
             const modal = document.getElementById('settings-modal');
             modal.classList.toggle('hidden');
