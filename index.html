@@ -20,13 +20,6 @@
         .tab-active { border-bottom: 2px solid #3b82f6; color: #60a5fa; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        
-        <button id="google-login-btn" class="w-full bg-[#4285F4] hover:bg-[#357AE8] text-white font-bold py-1 pl-1 pr-4 rounded-lg shadow-lg transition-all active:scale-95 flex items-center text-xs tracking-wide">
-    <div class="bg-white p-2 rounded-md shrink-0">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-4 h-4">
-    </div>
-    <span class="flex-1 text-center pr-6">Continue with Google</span>
-</button>
     </style>
 </head>
 
@@ -35,6 +28,1540 @@
  <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50 shadow-md">
         <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
             
+            <div class="flex items-center justify-between w-full sm:w-auto gap-3">
+                <h1 class="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center truncate">
+                    <img src="icon-192.png" alt="MaintenanceVault Logo" class="w-8 h-8 rounded shadow-md mr-2">
+                    <span class="truncate">MaintenanceVault</span>
+                </h1>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="window.location.reload()" class="bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm" title="Reload App">
+                        <i class="fas fa-sync-alt text-xs"></i>
+                    </button>
+                    <button onclick="toggleSettingsModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm" title="Settings">
+                        <i class="fas fa-cog text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-center sm:items-end w-full sm:w-auto">
+                <div id="user-display" class="hidden text-[10px] text-blue-400 font-bold mb-2 flex items-center justify-center sm:justify-end gap-3 w-full">
+                    <i id="sync-indicator" class="fas fa-cloud text-gray-600 hidden" title="Cloud Sync Active"></i>
+                    <span id="user-email" class="truncate max-w-[140px] sm:max-w-[200px]"></span>
+                    <span id="pro-badge" class="hidden bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded uppercase shadow-sm shrink-0">PRO</span>
+                    <button id="sign-out-btn" onclick="handleSignOut()" class="bg-red-900/30 text-red-400 hover:bg-red-600 hover:text-white px-2 py-1 rounded transition-colors flex items-center gap-1 border border-red-900/50 shrink-0">
+                        <i class="fas fa-sign-out-alt"></i> LOGOUT
+                    </button>
+                </div>
+                <button id="login-btn" onclick="switchAuthMode('signin')" class="text-[10px] bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded mb-2 transition-all">SIGN IN / JOIN</button>
+
+                <div id="header-stats" class="hidden flex items-center gap-4">
+                    <div class="text-[10px] text-gray-400 uppercase">CO2 Avoided: <span id="co2-stat" class="text-green-400 font-bold">0 kg</span></div>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="notify-toggle" class="sr-only peer" onchange="toggleNotifications()">
+                        <div class="relative w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ms-1 text-[9px] font-bold text-gray-500 uppercase">Alerts</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div id="nav-tabs" class="hidden flex max-w-4xl mx-auto px-4 mt-1 gap-4 text-sm font-semibold text-gray-500 overflow-x-auto whitespace-nowrap">
+            <button onclick="switchTab('vehicle')" id="tab-vehicle" class="pb-2 tab-active transition-colors">
+                <i class="fas fa-truck-pickup mr-1"></i> VEHICLE
+            </button>
+            <button onclick="switchTab('property')" id="tab-property" class="pb-2 hover:text-gray-300 transition-colors">
+                <i class="fas fa-home mr-1"></i> PROPERTY
+            </button>
+            <button onclick="switchTab('equipment')" id="tab-equipment" class="pb-2 hover:text-gray-300 transition-colors">
+                <i class="fas fa-toolbox mr-1"></i> EQUIPMENT
+            </button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="pb-2 hover:text-gray-300 transition-colors ml-auto">
+                <i class="fas fa-chart-pie mr-1"></i> IMPACT
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 flex-grow w-full">
+        <div id="dashboard" class="hidden">
+            <form id="input-form" class="hidden bg-gray-800 rounded-xl p-5 mb-6 border border-gray-700 shadow-xl animate-fade-in">
+                <h2 class="text-white font-bold mb-4 flex items-center">
+                    <i class="fas fa-plus-circle text-blue-500 mr-2"></i> New Maintenance Log
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Date</label>
+                        <input type="date" id="itemDate" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Equipment/Vehicle Name</label>
+                        <input type="text" id="itemAssetName" placeholder="e.g. Work Truck, HVAC, Property" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Service Performed</label>
+                        <input type="text" id="itemName" placeholder="e.g. Oil Change 0W-20" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Cost ($)</label>
+                        <input type="number" id="itemCost" step="0.01" placeholder="0.00" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Category</label>
+                        <select id="itemCategory" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
+                            <option value="Vehicle">Vehicle</option>
+                            <option value="Property">Property</option>
+                            <option value="Equipment">Equipment</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 uppercase mb-1">Part # / Specs</label>
+                        <input type="text" id="itemPart" placeholder="e.g. PF63 / 8 Quarts" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-yellow-400 font-mono outline-none">
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-900 p-2 rounded border border-gray-600">
+                        <span class="text-xs text-gray-400 uppercase">Action Type</span>
+                        <div class="flex gap-2">
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" name="actionType" value="replace" checked class="accent-blue-500">
+                                <span class="text-sm">Replace</span>
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" name="actionType" value="repair" class="accent-green-500">
+                                <span class="text-sm text-green-400">Repair</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-xs text-gray-500 uppercase mb-1">Notes (Torque, Gap, etc.)</label>
+                    <textarea id="itemNotes" rows="2" placeholder="e.g. Torque drain plug to 18 ft-lbs" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-gray-300 text-sm outline-none"></textarea>
+                </div>
+
+                <button type="submit" id="save-entry-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Entry</button>
+            </form>
+
+            <div id="filter-sort-bar" class="hidden flex justify-between items-center mb-4 px-1">
+                <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Logs</span>
+                <select id="sortOrder" onchange="renderVault()" class="bg-gray-800 border border-gray-700 rounded py-1 px-2 text-xs text-white outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="costHigh">Cost: High to Low</option>
+                    <option value="costLow">Cost: Low to High</option>
+                </select>
+            </div>
+
+            <div id="vault-list" class="grid gap-4"></div>
+
+            <div id="dashboard-view" class="hidden animate-fade-in mt-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 text-center">
+                        <div class="text-3xl font-bold text-green-400" id="dash-repaired">0</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider">Items Repaired</div>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 text-center">
+                        <div class="text-3xl font-bold text-blue-400" id="dash-replaced">0</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-wider">Items Replaced</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                    <h3 class="font-bold text-white mb-2 flex items-center"><i class="fas fa-recycle text-green-500 mr-2"></i>Impact Calculator</h3>
+                    <p class="text-sm text-gray-400 mb-6 leading-relaxed">Based on "Repair vs Replace" logic. Repairing avoids ~88% of new production emissions.</p>
+                    <div class="w-full bg-gray-700 rounded-full h-6 mb-2 overflow-hidden">
+                        <div id="impact-bar" class="bg-gradient-to-r from-green-600 to-green-400 h-6 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <div class="text-right text-xs text-green-400 font-mono font-bold uppercase tracking-wide" id="impact-percent">0% Circular Economy Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="auth-section" class="hidden max-w-md mx-auto mt-10">
+            <div class="bg-blue-950 w-full rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
+                <div id="auth-tabs" class="flex border-b border-gray-700">
+                    <button id="auth-tab-signin" onclick="switchAuthMode('signin')" class="flex-1 py-4 text-xs font-bold uppercase tracking-widest text-yellow-500 border-b-2 border-yellow-500 transition-all">Sign In</button>
+                    <button id="auth-tab-signup" onclick="switchAuthMode('signup')" class="flex-1 py-4 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-gray-300 transition-all">Sign Up</button>
+                </div>
+
+                <div id="verify-header" class="hidden p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center">
+                        <i class="fas fa-check-circle text-yellow-500 mr-2"></i>Verify Email
+                    </h2>
+                </div>
+
+                <div id="recovery-header" class="hidden p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center">
+                        <i class="fas fa-key text-yellow-500 mr-2"></i>Reset Password
+                    </h2>
+                </div>
+
+                <div class="p-6">
+                    <form id="auth-form" onsubmit="handleAuthSubmit(event); return false;" class="space-y-4">
+                    </form>
+                    <div id="auth-status-msg" class="mt-4 p-3 rounded text-xs text-center hidden"></div>
+                    
+                    <button id="google-login-btn" class="w-full mt-4 bg-white hover:bg-gray-100 text-gray-800 font-bold py-3 px-4 rounded-lg shadow-md transition-all active:scale-95 flex items-center justify-center gap-3 text-xs tracking-wide">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        <span>Continue with Google</span>
+                    </button>
+                </div>
+
+                <div class="p-4 bg-gray-900/50 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-shield-alt text-blue-500/50"></i> MaintenanceVault Secure Cloud
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="max-w-4xl mx-auto w-full p-6 border-t border-gray-800 text-center pb-24">
+        <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-2">System Notice</p>
+        <p class="text-xs text-gray-500 leading-relaxed max-w-md mx-auto">
+            ⚠️ <strong>Data stored locally.</strong> This app operates offline. Clearing your browser cache or site data will permanently delete your maintenance logs. 
+            <a href="javascript:void(0)" onclick="exportToCSV()" class="text-blue-500 hover:underline">Back up your logs now</a>.
+            <br>Not professional mechanic advice; use specs at your own risk.
+        </p>
+    </footer>
+
+    <button id="add-item-btn" onclick="toggleForm()" class="hidden fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-500 text-white w-14 h-14 rounded-full shadow-2xl z-50 flex items-center justify-center transition-transform active:scale-90">
+        <i class="fas fa-plus text-xl"></i>
+    </button>
+
+    <div id="paywall-modal" class="hidden fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-gray-800 w-full max-w-5xl rounded-2xl border border-blue-500/30 shadow-2xl overflow-y-auto max-h-[90vh] animate-fade-in relative">
+            <button onclick="togglePaywall()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors z-10"><i class="fas fa-times text-xl"></i></button>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-700">
+                <div class="p-8 flex flex-col">
+                    <h3 class="text-gray-400 uppercase text-xs font-bold tracking-widest mb-2">Free</h3>
+                    <div class="text-4xl font-bold text-white mb-6">$0</div>
+                    <ul class="space-y-4 text-sm text-gray-400 mb-8 flex-grow">
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i>Up to 5 Assets</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i>Offline LocalStorage</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-blue-500"></i>Basic Circular Economy Score</li>
+                    </ul>
+                    <button id="paywall-free-btn" onclick="handleDowngradeNotice()" class="w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest">Switch to Free</button>
+                </div>
+
+                <div class="p-8 flex flex-col bg-blue-900/10 border-x-0 md:border-x border-blue-500/50 relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg">Recommended</div>
+                    <h3 class="text-blue-400 uppercase text-xs font-bold tracking-widest mb-2">Pro</h3>
+                    <div class="text-4xl font-bold text-white mb-1">$49.99<span class="text-sm font-normal text-gray-500 ml-1">/ yr</span></div>
+                    <div class="text-xs text-gray-400 font-semibold mb-6">or $4.99 / mo</div>
+                    <ul class="space-y-4 text-sm text-gray-300 mb-8 flex-grow">
+                        <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>Unlimited Assets</li>
+                        <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>AWS Cloud Sync (Multi-device)</li>
+                        <li class="flex items-center gap-3 font-semibold text-blue-100"><i class="fas fa-check text-blue-400"></i>PDF Exporting</li>
+                    </ul>
+                    <div class="flex gap-2 w-full mt-auto">
+                        <button id="paywall-pro-mo-btn" onclick="handleUpgrade('MONTHLY')" class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center">Monthly<br>$4.99</button>
+                        <button id="paywall-pro-yr-btn" onclick="handleUpgrade('ANNUAL')" class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 uppercase text-[10px] tracking-widest text-center">Yearly<br>$49.99</button>
+                    </div>
+                </div>
+
+                <div class="p-8 flex flex-col">
+                    <h3 class="text-yellow-500 uppercase text-xs font-bold tracking-widest mb-2">ProCom</h3>
+                    <div class="text-4xl font-bold text-white mb-1">$15<span class="text-sm font-normal text-gray-500 ml-1">/ seat / mo</span></div>
+                    <p class="text-[10px] text-gray-500 mb-6 italic">For Fleets & Crews</p>
+                    <ul class="space-y-4 text-sm text-gray-400 mb-8 flex-grow">
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-yellow-600"></i>QR Code Engine Hours</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-yellow-600"></i>Real-time Triage Dashboard</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-yellow-600"></i>Role-Based Team Dispatch</li>
+                    </ul>
+                    <button id="paywall-procom-btn" onclick="joinProComWaitlist()" class="w-full py-3 px-4 rounded-xl font-bold transition-all border-2 border-yellow-600 text-yellow-500 hover:bg-yellow-600 hover:text-white uppercase text-[10px] tracking-widest text-center">Join the Waitlist</button>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-900/50 text-center border-t border-gray-700">
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Secure Checkout via RevenueCat & Stripe</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="hidden fixed inset-0 z-[75] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-gray-900 w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
+            <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950">
+                <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-user-edit text-blue-500 mr-2"></i>Edit Profile</h3>
+                <button onclick="toggleProfileModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <form id="profile-form" onsubmit="saveProfileData(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Full Name</label>
+                    <input type="text" id="prof-name" placeholder="Your Full Name" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Nickname / Company</label>
+                    <input type="text" id="prof-nickname" placeholder="e.g. Donkey Jaw Services" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Avatar Image URL</label>
+                    <input type="url" id="prof-picture" placeholder="https://..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+                <button type="submit" id="save-profile-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">Save Profile</button>
+                <div id="profile-status" class="hidden mt-2 text-xs text-center font-bold"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-blue-950 w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center bg-gradient-to-r from-blue-900/20 to-transparent shrink-0">
+                <h2 class="text-xl font-bold text-white tracking-tight flex items-center">
+                    <i class="fas fa-cog text-yellow-500 mr-2"></i>Settings
+                </h2>
+                <button onclick="toggleSettingsModal()" class="text-gray-500 hover:text-white transition-colors"><i class="fas fa-times text-lg"></i></button>
+            </div>
+
+            <div class="p-6 space-y-6 overflow-y-auto flex-1">
+                
+                <div class="space-y-2 border-b border-gray-800 pb-4 mb-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Account</h4>
+                    <button onclick="openProfileModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-lg border border-gray-700 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-user"></i> <span>EDIT PROFILE</span>
+                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Subscription</h4>
+                    <button onclick="toggleSettingsModal(); togglePaywall()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-crown"></i> <span>MANAGE PLAN / UPGRADE</span>
+                    </button>
+                </div>
+
+                <div class="space-y-2 border-t border-gray-800 pt-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Data Management</h4>
+                    <button onclick="exportToCSV()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2.5 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-file-export"></i> <span>EXPORT DATA (CSV)</span>
+                    </button>
+                </div>
+
+                <div class="space-y-2 border-t border-gray-800 pt-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Legal & Safety</h4>
+                    <button onclick="toggleTosModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2.5 rounded-lg border border-gray-700 transition-all text-xs flex items-center justify-center gap-2">
+                        <i class="fas fa-balance-scale"></i> VIEW TERMS & SAFETY DISCLAIMER
+                    </button>
+                </div>
+
+                <div class="space-y-2 border-t border-gray-800 pt-4">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider text-blue-400">Submit Feedback / Bugs</h4>
+                    <textarea id="feedbackText" rows="3" placeholder="Tell us what broke or what you need..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-sm text-gray-300 outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+                    <button onclick="submitFeedback()" id="feedback-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg transition-all text-xs">
+                        SUBMIT FEEDBACK
+                    </button>
+                </div>
+
+                <div id="danger-zone" class="hidden pt-4 border-t border-red-900/50 space-y-2">
+                    <h4 class="text-red-500 font-bold text-sm uppercase tracking-wider">Danger Zone</h4>
+                    <p class="text-[11px] text-gray-400 leading-relaxed">Permanently delete your entire cloud account and all associated logs. This cannot be undone.</p>
+                    <button onclick="toggleDeleteAccountModal()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-600/40 font-bold py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-xs">
+                        <i class="fas fa-user-slash"></i> <span>DELETE MY ACCOUNT & DATA</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-3 bg-gray-900/50 border-t border-gray-800 text-center shrink-0">
+                <button onclick="toggleSettingsModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded-lg transition-all text-xs mb-2">CLOSE</button>
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold flex items-center justify-center gap-1">
+                    <i class="fas fa-shield-alt text-blue-500/30"></i> MaintenanceVault Secure Cloud
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tos-modal" class="hidden fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-gray-900 w-full max-w-2xl rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in max-h-[85vh] flex flex-col">
+            <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 shrink-0">
+                <h3 class="text-lg font-bold text-white flex items-center"><i class="fas fa-gavel text-yellow-500 mr-2"></i>Terms of Service & Safety Disclaimer</h3>
+                <button onclick="toggleTosModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto text-xs text-gray-400 space-y-4 font-sans leading-relaxed">
+                <p class="mb-4 text-[13px] text-gray-300">By using MaintenanceVault, you explicitly agree to the full <a href="https://donkeyjawservices.com/terms" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Terms of Service and Privacy Policy</a> provided by Donkey Jaw Services LLC, in addition to the specific safety disclaimers below.</p>
+                <div class="bg-red-950/20 border border-red-900/40 p-4 rounded-xl text-red-200">
+                    <p class="font-bold uppercase tracking-wider text-xs mb-2 text-red-400">9. Not a Safety or Compliance Tool</p>
+                    <p>MaintenanceVault is a record-keeping and tracking tool only. It does not perform, certify, or guarantee the safety, airworthiness, roadworthiness, or compliance of any vehicle, equipment, or property tracked within the application. MaintenanceVault does not determine whether an item should be repaired or replaced. Decisions regarding repair, replacement, retirement, or continued use of any tracked item are solely the responsibility of the user. Users must independently consult and follow the applicable manufacturer specifications, OEM guidelines, and any federal, state, local, or industry-specific safety regulations governing the item in question, including but not limited to items where repair is not a permitted or safe alternative to replacement (e.g., safety harnesses after fall arrest, tires below legal tread depth, or components beyond manufacturer-certified tolerances). Donkey Jaw Services LLC assumes no liability for injury, death, property damage, or loss resulting from a user's decision to repair, replace, defer maintenance on, or continue using any item tracked through MaintenanceVault.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-950 border-t border-gray-800 shrink-0">
+                <button onclick="toggleTosModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">ACKNOWLEDGE & CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-item-modal" class="hidden fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-blue-950 w-full max-w-sm rounded-2xl border border-gray-700 shadow-2xl overflow-hidden animate-fade-in">
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-900/30">
+                    <i class="fas fa-trash-alt text-red-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Delete Log?</h3>
+                <p class="text-sm text-gray-400 mb-6">Are you sure you want to remove this maintenance record? This action cannot be undone.</p>
+
+                <div class="flex gap-3">
+                    <button onclick="toggleDeleteItemModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all">CANCEL</button>
+                    <button onclick="confirmDeleteItem()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">DELETE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-account-modal" class="hidden fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-gray-900 w-full max-w-md rounded-2xl border border-red-900 shadow-2xl overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-red-900/50 bg-red-950/20">
+                <h2 class="text-xl font-bold text-white tracking-tight flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Delete Account?
+                </h2>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div class="bg-red-900/10 border border-red-900/30 p-4 rounded-lg">
+                    <p class="text-sm text-red-200 font-bold mb-2">Are you sure?</p>
+                    <p class="text-xs text-red-300 leading-relaxed">
+                        This will permanently delete your account, cancel any active subscriptions, and erase all your maintenance logs from the cloud. <strong>This cannot be undone.</strong>
+                    </p>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold ml-1">Type "DELETE" to confirm</label>
+                    <input type="text" id="delete-confirm-input" placeholder="DELETE" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-red-500 outline-none transition-all uppercase">
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button onclick="toggleDeleteAccountModal()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition-all">CANCEL</button>
+                    <button id="delete-confirm-btn" onclick="handleAccountDeletion()" disabled class="flex-1 bg-red-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95">
+                        DELETE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const poolData = {
+            UserPoolId: 'us-east-1_c9WukUWbT',
+            ClientId: '4dbcdjlbao0o0otqnr29ul2rev'
+        };
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        const REVENUECAT_ANDROID_KEY = 'goog_MadNpQoboAIdqIQbRVAiPBNmovB';
+        const REVENUECAT_WEB_KEY = 'rcb_HZKPkgLDQNnGHpKnVRBvKQLKMtWM';
+        const REVENUECAT_PUBLIC_API_KEY = ('getDigitalGoodsService' in window) 
+            ? REVENUECAT_ANDROID_KEY 
+            : REVENUECAT_WEB_KEY;
+
+        let vaultData = JSON.parse(localStorage.getItem('sustainVault')) || [];
+        let currentTab = 'vehicle';
+        let currentUser = null;
+        let authMode = 'signin';
+        let itemToDelete = null;
+        let editItemId = null;
+
+        function base64UrlDecode(str) {
+            let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (base64.length % 4) base64 += '=';
+            return atob(base64);
+        }
+
+        function handleHostedUICallback() {
+            if (!window.location.hash || !window.location.hash.includes('id_token=')) return false;
+
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const idTokenString = hashParams.get('id_token');
+            const accessTokenString = hashParams.get('access_token');
+
+            if (!idTokenString || !accessTokenString) return false;
+
+            window.history.replaceState(null, null, window.location.pathname);
+
+            try {
+                const payload = JSON.parse(base64UrlDecode(idTokenString.split('.')[1]));
+                const username = payload['cognito:username'] || payload['sub'];
+                const email = payload['email']; 
+
+                const idToken = new AmazonCognitoIdentity.CognitoIdToken({ IdToken: idTokenString });
+                const accessToken = new AmazonCognitoIdentity.CognitoAccessToken({ AccessToken: accessTokenString });
+                
+                const refreshToken = new AmazonCognitoIdentity.CognitoRefreshToken({ RefreshToken: '' });
+
+                const session = new AmazonCognitoIdentity.CognitoUserSession({
+                IdToken: idToken,
+                AccessToken: accessToken,
+                RefreshToken: refreshToken
+                 });
+
+                const userData = { Username: username, Pool: userPool };
+                const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+                cognitoUser.setSignInUserSession(session);
+
+                currentUser = cognitoUser;
+
+                const showElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone', 'header-stats', 'filter-sort-bar'];
+                showElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('hidden');
+                });
+
+                const hideElements = ['auth-section', 'login-btn'];
+                hideElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+
+                const userEmailElem = document.getElementById('user-email');
+                if (userEmailElem) userEmailElem.innerText = email || username;
+
+                if (typeof Purchases !== 'undefined') {
+                    const rcClass = Purchases.Purchases || Purchases;
+                    window.rcInstance = rcClass.configure({
+                        apiKey: REVENUECAT_PUBLIC_API_KEY,
+                        appUserId: username
+                    });
+                    updateTierFromRevenueCat();
+                }
+
+                renderVault();
+                updateStats();
+                syncToAWS();
+
+                return true;
+            } catch (err) {
+                console.error("Failed to construct federated session:", err);
+                return false;
+            }
+        }
+
+        function addItem(event) {
+            if (event) event.preventDefault();
+            const assetName = document.getElementById('itemAssetName').value;
+            const name = document.getElementById('itemName').value;
+            const date = document.getElementById('itemDate').value;
+            const cost = document.getElementById('itemCost').value;
+
+            if(!name) return alert("Service Performed is required");
+            if(!date) return alert("Date is required");
+
+            const isPro = currentUser && currentUser.tier === 'Pro';
+            if (!isPro && vaultData.length >= 5 && !editItemId) {
+                togglePaywall();
+                return;
+            }
+
+            if (editItemId) {
+                const index = vaultData.findIndex(i => i.itemId === editItemId);
+                if (index > -1) {
+                    vaultData[index] = {
+                        ...vaultData[index],
+                        assetName, name, date, cost: parseFloat(cost) || 0,
+                        category: document.getElementById('itemCategory').value,
+                        part: document.getElementById('itemPart').value,
+                        type: document.querySelector('input[name="actionType"]:checked').value,
+                        notes: document.getElementById('itemNotes').value,
+                        updatedAt: new Date().toISOString()
+                    };
+                }
+                editItemId = null;
+                document.getElementById('save-entry-btn').innerText = 'Save Entry';
+            } else {
+                const newItem = {
+                    itemId: crypto.randomUUID(),
+                    assetName, name, date, cost: parseFloat(cost) || 0,
+                    category: document.getElementById('itemCategory').value,
+                    part: document.getElementById('itemPart').value,
+                    type: document.querySelector('input[name="actionType"]:checked').value,
+                    notes: document.getElementById('itemNotes').value,
+                    updatedAt: new Date().toISOString()
+                };
+                vaultData.unshift(newItem);
+            }
+            
+            localStorage.setItem('sustainVault', JSON.stringify(vaultData));
+            if(currentTab !== 'dashboard') toggleForm();
+            renderVault();
+            updateStats();
+            
+            document.getElementById('itemAssetName').value = '';
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPart').value = '';
+            document.getElementById('itemNotes').value = '';
+            document.getElementById('itemCost').value = '';
+            document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
+            syncToAWS();
+        }
+
+        function editItem(itemId) {
+            const item = vaultData.find(i => i.itemId === itemId);
+            if(!item) return;
+            
+            editItemId = itemId;
+            
+            document.getElementById('itemAssetName').value = item.assetName || '';
+            document.getElementById('itemName').value = item.name || '';
+            document.getElementById('itemDate').value = item.date || '';
+            document.getElementById('itemCost').value = item.cost || '';
+            document.getElementById('itemCategory').value = item.category || 'Vehicle';
+            document.getElementById('itemPart').value = item.part || '';
+            document.getElementById('itemNotes').value = item.notes || '';
+            
+            const typeRadios = document.getElementsByName('actionType');
+            for(let r of typeRadios) {
+                if(r.value === item.type) r.checked = true;
+            }
+
+            document.getElementById('save-entry-btn').innerText = 'Update Entry';
+            
+            const form = document.getElementById('input-form');
+            if(form.classList.contains('hidden')) toggleForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function duplicateItem(itemId) {
+            const item = vaultData.find(i => i.itemId === itemId);
+            if(!item) return;
+
+            document.getElementById('itemAssetName').value = item.assetName || '';
+            document.getElementById('itemName').value = item.name + ' (Copy)';
+            document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('itemCost').value = item.cost || '';
+            document.getElementById('itemCategory').value = item.category || 'Vehicle';
+            document.getElementById('itemPart').value = item.part || '';
+            document.getElementById('itemNotes').value = item.notes || '';
+            
+            const typeRadios = document.getElementsByName('actionType');
+            for(let r of typeRadios) {
+                if(r.value === item.type) r.checked = true;
+            }
+
+            editItemId = null;
+            document.getElementById('save-entry-btn').innerText = 'Save Entry';
+            
+            const form = document.getElementById('input-form');
+            if(form.classList.contains('hidden')) toggleForm();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function syncToAWS() {
+            if (!currentUser || currentUser.tier !== 'Pro') return;
+
+            const indicator = document.getElementById('sync-indicator');
+            indicator.classList.remove('hidden', 'text-gray-600', 'text-red-500');
+            indicator.classList.add('text-blue-500', 'fa-spin');
+
+            currentUser.getSession(async (err, session) => {
+                if (err) {
+                    indicator.classList.remove('fa-spin', 'text-blue-500');
+                    indicator.classList.add('text-red-500');
+                    return;
+                }
+                try {
+                    const token = session.getIdToken().getJwtToken();
+                    const apiEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
+
+                    const pushResponse = await fetch(apiEndpoint, {
+                        method: 'POST',
+                        headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(vaultData)
+                    });
+
+                    if (!pushResponse.ok) throw new Error("Cloud push failed");
+
+                    const pullResponse = await fetch(apiEndpoint, {
+                        method: 'GET',
+                        headers: { 'Authorization': token }
+                    });
+                    const cloudData = await pullResponse.json();
+
+                    let merged = [...vaultData];
+                    cloudData.forEach(cloudItem => {
+                        const localIndex = merged.findIndex(i => i.itemId === cloudItem.itemId);
+                        if (localIndex > -1) {
+                            if (new Date(cloudItem.updatedAt) > new Date(merged[localIndex].updatedAt)) {
+                                merged[localIndex] = cloudItem;
+                            }
+                        } else {
+                            merged.push(cloudItem);
+                        }
+                    });
+
+                    vaultData = merged.sort((a,b) => new Date(b.date) - new Date(a.date));
+                    localStorage.setItem('sustainVault', JSON.stringify(vaultData));
+                    renderVault();
+                    updateStats();
+
+                    indicator.classList.remove('fa-spin', 'text-blue-500');
+                    indicator.classList.add('text-green-500');
+
+                } catch (error) {
+                    console.error("Sync Error:", error);
+                    indicator.classList.remove('fa-spin', 'text-blue-500');
+                    indicator.classList.add('text-red-500');
+                }
+            });
+        }
+
+        function submitFeedback() {
+            const feedbackField = document.getElementById('feedbackText');
+            const feedback = feedbackField.value.trim();
+            if (!feedback) return alert("Feedback box cannot be blank.");
+
+            const userEmail = currentUser ? currentUser.getUsername() : 'Unauthenticated User';
+            const subject = encodeURIComponent("MaintenanceVault App Feedback");
+            const body = encodeURIComponent(`User: ${userEmail}\n\nFeedback:\n${feedback}`);
+            
+            window.location.href = `mailto:support@maintenancevault.com?subject=${subject}&body=${body}`;
+
+            feedbackField.value = '';
+            toggleSettingsModal();
+        }
+
+        async function handleAccountDeletion() {
+            const btn = document.getElementById('delete-confirm-btn');
+            const originalText = btn.innerText;
+            if (!currentUser) return alert("No active user session detected.");
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> PERMANENTLY ERASING...`;
+
+            currentUser.getSession(async (err, session) => {
+                if (err) {
+                    alert("Authentication expired. Please log back in before deleting your account.");
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    return;
+                }
+                try {
+                    const token = session.getIdToken().getJwtToken();
+                    
+                    const deletionEndpoint = 'https://7h6ynhonj0.execute-api.us-east-1.amazonaws.com/default/MaintenanceVault-Sync';
+                    const response = await fetch(deletionEndpoint, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': token }
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.message || "Cloud cleanup extraction rejected.");
+                    }
+
+                    localStorage.removeItem('sustainVault');
+                    vaultData = [];
+                    
+                    alert("Account and cloud records successfully deleted.");
+                    toggleDeleteAccountModal();
+                    toggleSettingsModal();
+                    handleSignOut();
+                } catch (error) {
+                    console.error("Deletion Processing Failure:", error);
+                    alert("Account deletion failed: " + error.message);
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            });
+        }
+
+        function renderVault() {
+            const list = document.getElementById('vault-list');
+            list.innerHTML = '';
+            const filtered = vaultData.filter(item => {
+                if (item.category === 'FeedbackSystemLog' || item.isDeleted) return false; 
+                if(currentTab === 'dashboard') return true;
+                if(currentTab === 'vehicle') return item.category === 'Vehicle';
+                if(currentTab === 'property') return item.category === 'Property';
+                if(currentTab === 'equipment') return item.category === 'Equipment';
+                return false;
+            });
+
+            const sortOrder = document.getElementById('sortOrder') ? document.getElementById('sortOrder').value : 'newest';
+            if (sortOrder === 'newest') filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sortOrder === 'oldest') filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (sortOrder === 'costHigh') filtered.sort((a, b) => (b.cost || 0) - (a.cost || 0));
+            if (sortOrder === 'costLow') filtered.sort((a, b) => (a.cost || 0) - (b.cost || 0));
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-600 mt-10 italic flex flex-col items-center"><i class="fas fa-clipboard-list text-4xl mb-4 opacity-20"></i>No logs found.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isRepair = item.type === 'repair';
+                const badgeColor = isRepair ? 'bg-green-900 text-green-300 border-green-800' : 'bg-blue-900 text-blue-300 border-blue-800';
+                const icon = item.category === 'Vehicle' ? 'fa-car' : 'fa-tools';
+
+                let displayDate = 'N/A';
+                if (item.date) {
+                    const dateParts = item.date.split('-');
+                    if (dateParts.length === 3) {
+                        displayDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
+                    } else {
+                        displayDate = new Date(item.date).toLocaleDateString();
+                    }
+                }
+
+                const displayCost = (item.cost || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+                list.innerHTML += `
+                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-sm relative group hover:border-blue-500 transition-colors">
+                        <button onclick="duplicateItem('${item.itemId}')" class="absolute top-3 right-16 text-gray-500 hover:text-green-400 p-2" title="Duplicate Log"><i class="fas fa-copy"></i></button>
+                        <button onclick="editItem('${item.itemId}')" class="absolute top-3 right-9 text-gray-500 hover:text-blue-400 p-2" title="Edit Log"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteItem('${item.itemId}')" class="absolute top-3 right-2 text-gray-600 hover:text-red-500 p-2" title="Delete Log"><i class="fas fa-trash"></i></button>
+                        
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 text-2xl text-gray-500 bg-gray-900 p-3 rounded-full h-12 w-12 flex items-center justify-center border border-gray-700"><i class="fas ${icon}"></i></div>
+                            <div class="flex-1 pr-24">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="font-bold text-white text-lg leading-tight">${item.name}</h3>
+                                        <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">${item.assetName || 'General Asset'}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-bold text-green-400">${displayCost}</p>
+                                        <p class="text-[10px] text-gray-500 font-mono uppercase tracking-tighter">${displayDate}</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2 my-2">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide border ${badgeColor}">${item.type}</span>
+                                    <span class="text-[10px] font-mono text-yellow-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-700 truncate max-w-[150px]">${item.part || 'No Part #'}</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-1 border-l-2 border-gray-600 pl-2 italic">"${item.notes}"</p>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function toggleDeleteItemModal() {
+            const modal = document.getElementById('delete-item-modal');
+            modal.classList.toggle('hidden');
+            if (modal.classList.contains('hidden')) {
+                itemToDelete = null;
+            }
+        }
+
+        function updateStats() {
+            const validItems = vaultData.filter(i => i.category !== 'FeedbackSystemLog' && !i.isDeleted);
+            const repaired = validItems.filter(i => i.type === 'repair').length;
+            const replaced = validItems.filter(i => i.type === 'replace').length;
+            const total = repaired + replaced;
+            const co2Saved = repaired * 10; 
+            document.getElementById('co2-stat').innerText = `${co2Saved} kg`;
+            document.getElementById('dash-repaired').innerText = repaired;
+            document.getElementById('dash-replaced').innerText = replaced;
+            const score = total === 0 ? 0 : Math.round((repaired / total) * 100);
+            document.getElementById('impact-bar').style.width = `${score}%`;
+            document.getElementById('impact-percent').innerText = `${score}% Sustainability Score`;
+        }
+
+        function toggleNotifications() {
+            const toggle = document.getElementById('notify-toggle');
+            if (toggle.checked) {
+                if (!("Notification" in window)) { alert("Not supported."); toggle.checked = false; return; }
+                Notification.requestPermission().then(p => {
+                    if (p === "granted") { checkForDueMaintenance(); localStorage.setItem('notificationsEnabled', 'true'); }
+                    else { toggle.checked = false; localStorage.setItem('notificationsEnabled', 'false'); }
+                });
+            } else localStorage.setItem('notificationsEnabled', 'false');
+        }
+
+        function checkForDueMaintenance() {
+            if (Notification.permission !== "granted") return;
+            const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            vaultData.forEach(item => {
+                if (item.category !== 'FeedbackSystemLog' && !item.isDeleted && new Date(item.date) < sixMonthsAgo) sendLocalNotification(item);
+            });
+        }
+
+        function sendLocalNotification(item) {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(reg => {
+                    const partText = item.part ? ` (${item.part})` : '';
+                    reg.showNotification('Maintenance Due', {
+                        body: `Your ${item.name}${partText} is due for service.`,
+                        icon: 'icon-192.png',
+                        tag: `maint-${item.itemId}`,
+                        actions: [{ action: 'view', title: 'View Details' }]
+                    });
+                });
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('#nav-tabs button').forEach(b => {
+                b.classList.remove('tab-active', 'text-blue-400');
+                b.classList.add('hover:text-gray-300');
+            });
+            document.getElementById(`tab-${tab}`).classList.add('tab-active', 'text-blue-400');
+
+            document.getElementById('input-form').classList.add('hidden');
+
+            if (tab === 'dashboard') {
+                document.getElementById('vault-list').classList.remove('hidden');
+                document.getElementById('dashboard-view').classList.remove('hidden');
+                document.getElementById('add-item-btn').classList.add('hidden');
+                document.getElementById('filter-sort-bar').classList.add('hidden');
+            } else {
+                document.getElementById('vault-list').classList.remove('hidden');
+                document.getElementById('dashboard-view').classList.add('hidden');
+                document.getElementById('add-item-btn').classList.remove('hidden');
+                document.getElementById('filter-sort-bar').classList.remove('hidden');
+            }
+
+            renderVault();
+        }
+
+        function toggleForm() {
+            const form = document.getElementById('input-form');
+            form.classList.toggle('hidden');
+            if(!form.classList.contains('hidden')) {
+                if (currentTab === 'vehicle') document.getElementById('itemCategory').value = 'Vehicle';
+                else if (currentTab === 'property') document.getElementById('itemCategory').value = 'Property';
+                else if (currentTab === 'equipment') document.getElementById('itemCategory').value = 'Equipment';
+            }
+        }
+
+        function toggleProfileModal() {
+            document.getElementById('profile-modal').classList.toggle('hidden');
+        }
+
+        function openProfileModal() {
+            if (!currentUser) return alert("Please sign in to edit your profile.");
+            
+            toggleSettingsModal(); 
+            toggleProfileModal();  
+
+            currentUser.getUserAttributes((err, attributes) => {
+                if (err) return console.error("Could not load profile:", err);
+                attributes.forEach(attr => {
+                    if (attr.getName() === 'name') document.getElementById('prof-name').value = attr.getValue();
+                    if (attr.getName() === 'nickname') document.getElementById('prof-nickname').value = attr.getValue();
+                    if (attr.getName() === 'picture') document.getElementById('prof-picture').value = attr.getValue();
+                });
+            });
+        }
+
+        function saveProfileData(e) {
+            e.preventDefault();
+            const btn = document.getElementById('save-profile-btn');
+            const status = document.getElementById('profile-status');
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SAVING...`;
+
+            const attributeList = [
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'name', Value: document.getElementById('prof-name').value }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'nickname', Value: document.getElementById('prof-nickname').value }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'picture', Value: document.getElementById('prof-picture').value })
+            ];
+
+            currentUser.updateAttributes(attributeList, (err, result) => {
+                btn.disabled = false;
+                btn.innerHTML = `Save Profile`;
+                status.classList.remove('hidden', 'text-red-400', 'text-green-400');
+                
+                if (err) {
+                    status.classList.add('text-red-400');
+                    status.innerText = err.message || "Failed to save profile.";
+                } else {
+                    status.classList.add('text-green-400');
+                    status.innerText = "Profile updated successfully!";
+
+                    // Update header instantly without refreshing
+                    const newName = document.getElementById('prof-name').value;
+                    const newNickname = document.getElementById('prof-nickname').value;
+                    const headerElem = document.getElementById('user-email');
+                    if (newNickname) headerElem.innerText = newNickname;
+                    else if (newName && newName !== 'New User') headerElem.innerText = newName;
+
+                    setTimeout(() => { 
+                        toggleProfileModal(); 
+                        status.classList.add('hidden'); 
+                    }, 1500);
+                }
+            });
+        }
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function toggleTosModal() {
+            const modal = document.getElementById('tos-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function toggleDeleteAccountModal() {
+            const modal = document.getElementById('delete-account-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('delete-confirm-input').value = '';
+                document.getElementById('delete-confirm-btn').disabled = true;
+            }
+        }
+
+        function exportToCSV() {
+            if (vaultData.length === 0) {
+                alert("No data to export.");
+                return;
+            }
+
+            const headers = ['itemId', 'assetName', 'name', 'category', 'part', 'type', 'notes', 'date', 'updatedAt'];
+            const csvRows = [headers.join(',')];
+
+            vaultData.forEach(item => {
+                if (item.category === 'FeedbackSystemLog' || item.isDeleted) return;
+                const values = headers.map(header => {
+                    const val = item[header] || '';
+                    const escaped = ('' + val).replace(/"/g, '""');
+                    return `"${escaped}"`;
+                });
+                csvRows.push(values.join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const date = new Date().toISOString().split('T')[0];
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', `MaintenanceVault_Backup_${date}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function clearAuthStatus() {
+            const statusMsg = document.getElementById('auth-status-msg');
+            statusMsg.classList.add('hidden');
+            statusMsg.innerText = '';
+        }
+
+        function showAuthStatus(msg, isError = true) {
+            const statusMsg = document.getElementById('auth-status-msg');
+            statusMsg.innerText = msg;
+            statusMsg.classList.remove('hidden', 'bg-red-900/50', 'text-red-400', 'bg-green-900/50', 'text-green-400');
+            statusMsg.classList.add(isError ? 'bg-red-900/50' : 'bg-green-900/50', isError ? 'text-red-400' : 'text-green-400');
+        }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            const authForm = document.getElementById('auth-form');
+            const authTabs = document.getElementById('auth-tabs');
+            const verifyHeader = document.getElementById('verify-header');
+            const recoveryHeader = document.getElementById('recovery-header');
+            const tabSignin = document.getElementById('auth-tab-signin');
+            const tabSignup = document.getElementById('auth-tab-signup');
+
+            clearAuthStatus();
+
+            authTabs.classList.remove('hidden');
+            verifyHeader.classList.add('hidden');
+            recoveryHeader.classList.add('hidden');
+            tabSignin.className = "flex-1 py-4 text-xs font-bold uppercase tracking-widest transition-all";
+            tabSignup.className = "flex-1 py-4 text-xs font-bold uppercase tracking-widest transition-all";
+
+            let formHTML = '';
+
+            const emailField = (email = '', readonly = false) => `
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1 ml-1">Email Address</label>
+                    <input type="email" name="email" id="auth-email" value="${email}" ${readonly ? 'readonly' : ''} autocomplete="username" required placeholder="name@email.com" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:border-yellow-600 outline-none transition-all">
+                </div>`;
+
+            const passwordField = (label = 'Password', id = 'auth-password', autocomplete = 'current-password') => `
+                <div>
+                    <div class="flex justify-between items-center mb-1 ml-1">
+                        <label class="block text-[10px] text-gray-500 uppercase font-bold">${label}</label>
+                        ${mode === 'signin' ? '<button type="button" onclick="switchAuthMode(\'forgot_password\')" class="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase">Forgot Password?</button>' : ''}
+                    </div>
+                    <div class="relative">
+                        <input type="password" name="${id === 'auth-password' ? 'password' : 'confirmPassword'}" id="${id}" autocomplete="${autocomplete}" required placeholder="••••••••" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:border-yellow-600 outline-none transition-all pr-10">
+                        <button type="button" onclick="togglePasswordVisibility('${id}', '${id}-toggle-icon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300">
+                            <i id="${id}-toggle-icon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>`;
+
+            const codeField = `
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1 ml-1">Verification Code</label>
+                    <input type="text" name="code" id="auth-code" autocomplete="one-time-code" required placeholder="123456" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:border-yellow-600 outline-none transition-all">
+                </div>`;
+
+            const signupTermsCheckbox = `
+                <div class="flex items-start gap-2 pt-2">
+                    <input type="checkbox" id="signup-tos-agree" required class="mt-1 accent-yellow-600 cursor-pointer">
+                    <label for="signup-tos-agree" class="text-[11px] text-gray-400 leading-tight cursor-pointer select-none">
+                        I explicitly accept and agree to the <a href="javascript:void(0)" onclick="toggleTosModal()" class="text-blue-400 underline hover:text-blue-300">Terms of Service & Safety Disclaimer</a>.
+                    </label>
+                </div>`;
+
+            const submitButton = (text) => `
+                <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <span>${text}</span>
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </button>`;
+
+            let currentEmail = document.getElementById('auth-email')?.value || '';
+            currentEmail = currentEmail.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+            if (mode === 'signin') {
+                tabSignin.classList.add('text-yellow-500', 'border-b-2', 'border-yellow-500');
+                tabSignup.classList.add('text-gray-500', 'hover:text-gray-300');
+                formHTML = emailField(currentEmail) + passwordField() + submitButton('SIGN IN');
+            } else if (mode === 'signup') {
+                tabSignup.classList.add('text-yellow-500', 'border-b-2', 'border-yellow-500');
+                tabSignup.classList.add('text-gray-500', 'hover:text-gray-300');
+                formHTML = emailField(currentEmail) + passwordField('Password', 'auth-password', 'new-password') + passwordField('Confirm Password', 'auth-confirm-password', 'new-password') + signupTermsCheckbox + submitButton('CREATE ACCOUNT');
+            } else if (mode === 'confirm') {
+                authTabs.classList.add('hidden');
+                verifyHeader.classList.remove('hidden');
+                formHTML = emailField(currentEmail, true) + codeField + submitButton('VERIFY CODE');
+            } else if (mode === 'forgot_password') {
+                authTabs.classList.add('hidden');
+                recoveryHeader.classList.remove('hidden');
+                formHTML = emailField(currentEmail) + submitButton('SEND RECOVERY CODE');
+            } else if (mode === 'reset_password') {
+                authTabs.classList.add('hidden');
+                recoveryHeader.classList.remove('hidden');
+                formHTML = emailField(currentEmail, true) + codeField + passwordField('New Password', 'auth-password', 'new-password') + passwordField('Confirm New Password', 'auth-confirm-password', 'new-password') + submitButton('RESET PASSWORD');
+            }
+
+            authForm.innerHTML = formHTML;
+        }
+
+        function handleAuthSubmit(event) {
+            if (event) event.preventDefault();
+            const formData = new FormData(document.getElementById('auth-form'));
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+            const code = formData.get('code');
+
+            if (!email) return showAuthStatus("Email is required");
+
+            try {
+                if (authMode === 'signin') {
+                    if (!password) return showAuthStatus("Password is required");
+                    const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({ Username: email, Password: password });
+                    const cognitoUser = new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
+                    
+                    cognitoUser.authenticateUser(authenticationDetails, {
+                        onSuccess: (result) => {
+                            checkAuthState();
+                        },
+                        onFailure: (err) => {
+                            showAuthStatus(err.message || "Sign in failed");
+                        }
+                    });
+                }
+                else if (authMode === 'signup') {
+                    if (!password) return showAuthStatus("Password is required");
+                    if (password !== confirmPassword) return showAuthStatus("Passwords do not match");
+                    
+                    const termsCheck = document.getElementById('signup-tos-agree');
+                    if (!termsCheck || !termsCheck.checked) {
+                        return showAuthStatus("You must accept the Terms of Service to sign up.");
+                    }
+
+                    const attributeList = [
+                        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'email', Value: email }),
+                        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'name', Value: 'New User' }),
+                        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'custom:tier', Value: 'Free' })
+                    ];
+
+                    userPool.signUp(email, password, attributeList, null, (err, result) => {
+                        if (err) return showAuthStatus(err.message || "Sign up failed");
+                        switchAuthMode('confirm');
+                        showAuthStatus("Verification code sent to email", false);
+                    });
+                }
+                else if (authMode === 'confirm') {
+                    if (!code) return showAuthStatus("Verification code is required");
+                    const cognitoUser = new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
+                    cognitoUser.confirmRegistration(code, true, (err, result) => {
+                        if (err) return showAuthStatus(err.message || "Verification failed");
+                        switchAuthMode('signin');
+                        showAuthStatus("Account verified! You can now sign in.", false);
+                    });
+                }
+                else if (authMode === 'forgot_password') {
+                    const cognitoUser = new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
+                    cognitoUser.forgotPassword({
+                        onSuccess: (data) => {},
+                        onFailure: (err) => showAuthStatus(err.message || "Failed to send code"),
+                        inputVerificationCode: (data) => {
+                            switchAuthMode('reset_password');
+                            showAuthStatus("Recovery code sent to your email", false);
+                        }
+                    });
+                }
+                else if (authMode === 'reset_password') {
+                    if (!code) return showAuthStatus("Verification code is required");
+                    if (!password) return showAuthStatus("New Password is required");
+                    if (password !== confirmPassword) return showAuthStatus("Passwords do not match");
+                    
+                    const cognitoUser = new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
+                    cognitoUser.confirmPassword(code, password, {
+                        onSuccess: () => {
+                            switchAuthMode('signin');
+                            showAuthStatus("Password reset successful! Please sign in.", false);
+                        },
+                        onFailure: (err) => {
+                            showAuthStatus(err.message || "Password reset failed");
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+                showAuthStatus(error.message || "An error occurred");
+            }
+        }
+
+        function handleSignOut() {
+            const tier = currentUser && currentUser.tier ? currentUser.tier : 'Free';
+            if (tier === 'Free') {
+                const confirmOut = confirm("WARNING: You are on the Free plan. Logging out will permanently clear your offline device data for security. Please export a CSV backup first. Are you sure you want to log out?");
+                if (!confirmOut) return; 
+            }
+
+            if (currentUser) {
+                currentUser.signOut();
+                currentUser = null;
+            }
+            
+            localStorage.removeItem('sustainVault');
+            vaultData = [];
+            handleAuthFailure(new Error("Signed out securely"));
+
+            const cognitoDomain = "https://us-east-1c9wukuwbt.auth.us-east-1.amazoncognito.com";
+            const redirectUri = "https://maintenancevaultapp.com";
+            window.location.href = `${cognitoDomain}/logout?client_id=${poolData.ClientId}&logout_uri=${redirectUri}`;
+        }
+
+        function checkAuthState() {
+            return new Promise((resolve) => {
+                const cognitoUser = userPool.getCurrentUser();
+                
+                if (cognitoUser != null) {
+                    cognitoUser.getSession((err, session) => {
+                        if (err) {
+                            handleAuthFailure(err);
+                            resolve();
+                            return;
+                        }
+                        
+                        currentUser = cognitoUser;
+
+                        const showElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone', 'header-stats'];
+                        showElements.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.classList.remove('hidden');
+                        });
+                        document.getElementById('filter-sort-bar').classList.remove('hidden');
+
+                        const hideElements = ['auth-section', 'login-btn'];
+                        hideElements.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.classList.add('hidden');
+                        });
+
+                        if (typeof Purchases !== 'undefined') {
+                            try {
+                                const rcClass = Purchases.Purchases || Purchases;
+                                window.rcInstance = rcClass.configure({
+                                    apiKey: REVENUECAT_PUBLIC_API_KEY,
+                                    appUserId: cognitoUser.getUsername()
+                                });
+                                updateTierFromRevenueCat();
+                            } catch (rcError) {
+                                console.error("RevenueCat Init Error:", rcError);
+                            }
+                        }
+
+                        cognitoUser.getUserAttributes((err, attributes) => {
+                            if (!err && attributes) {
+                                const tierAttr = attributes.find(a => a.getName() === 'custom:tier');
+                                const emailAttr = attributes.find(a => a.getName() === 'email');
+                                const nameAttr = attributes.find(a => a.getName() === 'name');
+                                const nicknameAttr = attributes.find(a => a.getName() === 'nickname');
+                                
+                                if (!currentUser.tier || currentUser.tier === 'Free') {
+                                    currentUser.tier = tierAttr ? tierAttr.getValue() : 'Free';
+                                }
+
+                                const userEmailElem = document.getElementById('user-email');
+                                if (userEmailElem) {
+                                    const nickname = nicknameAttr ? nicknameAttr.getValue() : null;
+                                    const name = nameAttr ? nameAttr.getValue() : null;
+                                    const email = emailAttr ? emailAttr.getValue() : cognitoUser.getUsername();
+                                    
+                                    // Prioritize Nickname -> Name -> Email
+                                    userEmailElem.innerText = nickname || (name && name !== 'New User' ? name : null) || email;
+                                }
+                                renderVault();
+                            }
+                        });
+
+                        renderVault();
+                        updateStats();
+                        syncToAWS();
+                        resolve();
+                    });
+                } else {
+                    handleAuthFailure(new Error("No user found"));
+                    resolve();
+                }
+            });
+        }
+
+        function handleAuthFailure(e) {
+            currentUser = null;
+            const hideElements = ['dashboard', 'nav-tabs', 'add-item-btn', 'user-display', 'danger-zone', 'header-stats', 'filter-sort-bar'];
+            hideElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const showElements = ['auth-section', 'login-btn'];
+            showElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('hidden');
+            });
+
+            switchAuthMode('signin');
+            renderVault();
+            updateStats();
+        }
+
+        async function updateTierFromRevenueCat() {
+            try {
+                let rc = window.rcInstance;
+                if (!rc && typeof Purchases !== 'undefined' && currentUser) {
+                    const rcClass = Purchases.Purchases || Purchases;
+                    rc = rcClass.configure({ apiKey: REVENUECAT_PUBLIC_API_KEY, appUserId: currentUser.getUsername() });
+                    window.rcInstance = rc;
+                }
+
+                if (!rc) return;
+
+                const customerInfo = await rc.getCustomerInfo();
+                
+                const activePremium = customerInfo.entitlements.active['Premium'] || 
+                                      customerInfo.entitlements.active['MaintenanceVault Pro'] || 
+                                      customerInfo.entitlements.active['ent1fca47f2ebc'];
+                
+                if (activePremium) {
+                    currentUser.tier = 'Pro';
+                    currentUser.activeProduct = activePremium.productIdentifier;
+                    const badge = document.getElementById('pro-badge');
+                    if(badge) badge.classList.remove('hidden');
+                    syncToAWS();
+                } else {
+                    currentUser.tier = 'Free';
+                    currentUser.activeProduct = null;
+                    const badge = document.getElementById('pro-badge');
+                    if(badge) badge.classList.add('hidden');
+                }
+                renderVault();
+            } catch (e) {
+                console.error("RevenueCat Error:", e);
+            }
+        }
+
+        function joinProComWaitlist() {
+            window.location.href = "mailto:support@maintenancevault.com?subject=ProCom Waitlist Interest&body=I am interested in the ProCom tier for fleets and crews. Please notify me when it's available.";
+        }
+
+        function handleDowngradeNotice() {
+            alert("To downgrade or cancel your subscription securely, please manage it directly through your emailed receipt layout link or contact support@maintenancevault.com.");
+        }
+
+        function togglePaywall() {
+            if (!currentUser) {
+                alert("Please sign in first to manage subscriptions.");
+                return;
+            }
+            const modal = document.getElementById('paywall-modal');
+            modal.classList.toggle('hidden');
+
+            if (!modal.classList.contains('hidden')) {
+                const freeBtn = document.getElementById('paywall-free-btn');
+                const proMoBtn = document.getElementById('paywall-pro-mo-btn');
+                const proYrBtn = document.getElementById('paywall-pro-yr-btn');
+                const tier = currentUser.tier || 'Free';
+                const activeProd = currentUser.activeProduct || '';
+
+                freeBtn.disabled = false;
+                freeBtn.innerText = "Switch to Free";
+                freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 uppercase text-[10px] tracking-widest";
+
+                proMoBtn.disabled = false;
+                proMoBtn.innerHTML = "Monthly<br>$4.99";
+                proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-900 text-blue-100 hover:bg-blue-800 shadow border border-blue-700 active:scale-95 uppercase text-[10px] tracking-widest text-center";
+
+                proYrBtn.disabled = false;
+                proYrBtn.innerHTML = "Yearly<br>$49.99";
+                proYrBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-600 hover:bg-blue-500 text-white shadow-lg active:scale-95 uppercase text-[10px] tracking-widest text-center";
+
+                if (tier === 'Free') {
+                    freeBtn.disabled = true;
+                    freeBtn.innerText = "Current Plan";
+                    freeBtn.className = "w-full py-3 px-4 rounded-xl font-bold transition-all bg-gray-800 text-gray-500 cursor-not-allowed uppercase text-[10px] tracking-widest";
+                } else if (tier === 'Pro') {
+                    if (activeProd.includes('mo') || activeProd.includes('Monthly') || activeProd === 'prod_UtaRl0alrq8tYQ' || activeProd === 'prodf0eaca2a90') {
+                        proMoBtn.disabled = true;
+                        proMoBtn.innerHTML = "Current Plan";
+                        proMoBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-950 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
+                    } else {
+                        proYrBtn.disabled = true;
+                        proYrBtn.innerHTML = "Current Plan";
+                        proYrBtn.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-blue-950 text-blue-400 cursor-not-allowed uppercase text-[10px] tracking-widest text-center border border-transparent";
+                    }
+                }
+            }
+        }
+
+      async function handleUpgrade(packageType) {
+            if ('getDigitalGoodsService' in window) {
+                try {
+                    const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+                    if (service) {
+                        const sku = packageType === 'MONTHLY' ? 'mv_pro_monthly' : 'mv_pro_yearly';
+                        
+                        const paymentMethods = [{
+                            supportedMethods: "https://play.google.com/billing",
+                            data: { sku: sku }
+                        }];
+                        
+                        const request = new PaymentRequest(paymentMethods);
+                        const response = await request.show();
+                        
+                        await response.complete('success');
+                        
+                        const rc = window.rcInstance;
+                        await rc.syncPurchases(); 
+                        await updateTierFromRevenueCat();
+                        
+                        if (currentUser.tier === 'Pro') {
+                            alert("Welcome to Pro! Your sync features are now active.");
+                            togglePaywall();
+                        }
+                        return; 
+                    }
+                } catch (error) {
+                    console.error("Google Play Billing Error:", error);
+                    alert("Google Play purchase failed or was canceled.");
+                    return;
+                }
+            }
+
+            try {
+                let rc = window.rcInstance;
+                if (!rc && typeof Purchases !== 'undefined' && currentUser) {
+                    const rcClass = Purchases.Purchases || Purchases;
+                    rc = rcClass.configure({ apiKey: REVENUECAT_PUBLIC_API_KEY, appUserId: currentUser.getUsername() });
+                    window.rcInstance = rc;
+                }
+
+                if (!rc) throw new Error("Billing not initialized. Please refresh the page and try again.");
+                
+                const offerings = await rc.getOfferings();
+                let activeOffering = offerings.current;
+                
+                if (!activeOffering || !activeOffering.availablePackages || activeOffering.availablePackages.length === 0) {
+                    if (offerings.all && offerings.all['default']) activeOffering = offerings.all['default'];
+                    else if (offerings.all && Object.values(offerings.all).length > 0) activeOffering = Object.values(offerings.all)[0];
+                }
+
+                if (!activeOffering || !activeOffering.availablePackages || activeOffering.availablePackages.length === 0) {
+                    throw new Error("RevenueCat is not sending any products.");
+                }
+
+                const packages = activeOffering.availablePackages;
+                let packageToBuy = packageType === 'MONTHLY' ? 
+                    packages.find(p => p.identifier === '$rc_monthly' || p.packageType === 'MONTHLY') : 
+                    packages.find(p => p.identifier === '$rc_annual' || p.packageType === 'ANNUAL');
+
+                if (!packageToBuy) packageToBuy = packages[0];
+
+                await rc.purchase({ rcPackage: packageToBuy });
+                
+                await updateTierFromRevenueCat();
+                if (currentUser.tier === 'Pro') {
+                    alert("Welcome to Pro! Your sync features are now active.");
+                    togglePaywall();
+                }
+            } catch (error) {
+                console.error("Stripe Upgrade Error:", error);
+                alert("Purchase failed: " + error.message);
+            }
+        }
+
+        async function initializeApp() {
+            if (navigator.storage && navigator.storage.persist) {
+                try {
+                    const isPersisted = await navigator.storage.persist();
+                    console.log(`Persistent storage granted: ${isPersisted}`);
+                } catch (e) {
+                    console.error("Persistent storage request failed", e);
+                }
+            }
+
+            const handledCallback = handleHostedUICallback();
+            
+            if (!handledCallback) {
+                await checkAuthState();
+            }
+            
+            const isEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+            document.getElementById('notify-toggle').checked = isEnabled;
+            if (isEnabled) checkForDueMaintenance();
+            if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('itemDate').value = today;
+
+            document.getElementById('delete-confirm-input').addEventListener('input', (e) => {
+                const btn = document.getElementById('delete-confirm-btn');
+                btn.disabled = e.target.value.toUpperCase() !== 'DELETE';
+            });
+
+            document.getElementById('input-form').addEventListener('submit', addItem);
+            
+            document.getElementById('google-login-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const cognitoDomain = "https://us-east-1c9wukuwbt.auth.us-east-1.amazoncognito.com";
+                const redirectUri = "https://maintenancevaultapp.com"; 
+
+                const loginUrl = `${cognitoDomain}/oauth2/authorize?identity_provider=Google&response_type=TOKEN&client_id=${poolData.ClientId}&redirect_uri=${redirectUri}`;
+                window.location.href = loginUrl;
+            });
+        }
+
+        initializeApp();
+    </script>
+</body>
+</html>            
             <div class="flex items-center justify-between w-full sm:w-auto gap-3">
                 <h1 class="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center truncate">
                     <img src="icon-192.png" alt="MaintenanceVault Logo" class="w-8 h-8 rounded shadow-md mr-2">
