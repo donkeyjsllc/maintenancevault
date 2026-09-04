@@ -21,14 +21,12 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         
-        .social-btn { 
-            display: flex; align-items: center; justify-content: center; gap: 10px; 
-            width: 100%; padding: 12px; background-color: #ffffff; color: #1f2937; 
-            border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 15px; 
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; 
-            transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .social-btn:hover { background-color: #f3f4f6; transform: scale(0.98); }
+        <button id="google-login-btn" class="w-full bg-[#4285F4] hover:bg-[#357AE8] text-white font-bold py-1 pl-1 pr-4 rounded-lg shadow-lg transition-all active:scale-95 flex items-center text-xs tracking-wide">
+    <div class="bg-white p-2 rounded-md shrink-0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="w-4 h-4">
+    </div>
+    <span class="flex-1 text-center pr-6">Continue with Google</span>
+</button>
     </style>
 </head>
 
